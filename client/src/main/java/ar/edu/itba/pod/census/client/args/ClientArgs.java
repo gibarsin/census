@@ -10,21 +10,28 @@ import java.util.Objects;
 @SuppressWarnings({"UnusedDeclaration"}) // JCommander populates all the private fields
 public final class ClientArgs {
 
-  private static final ClientArgs singletonInstance = new ClientArgs();
   @Parameter(names = "-Daddresses", required = true)
   private List<String> addresses = new ArrayList<>();
+
   @Parameter(names = "-Dquery", validateWith = QueryArgValidator.class, required = true)
   private Integer query;
+
   @Parameter(names = "-DinPath", required = true)
   private String inPath;
+
   @Parameter(names = "-DoutPath", required = true)
   private String outPath;
+
   @Parameter(names = "-DtimeOutPath", required = true)
   private String timeOutPath;
+
   @Parameter(names = "-Dn")
   private Integer n;
+
   @Parameter(names = "-Dprov")
   private Integer province;
+
+  private static final ClientArgs singletonInstance = new ClientArgs();
 
   private ClientArgs() {
   }

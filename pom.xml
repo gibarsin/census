@@ -20,6 +20,7 @@
     <ch.qos.logback.version>1.2.3</ch.qos.logback.version>
     <org.slf4j>1.7.25</org.slf4j>
     <com.beust.jcommander.version>1.72</com.beust.jcommander.version>
+    <org.apache.commons.version>1.5</org.apache.commons.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -35,6 +36,11 @@
       <groupId>com.beust</groupId>
       <artifactId>jcommander</artifactId>
       <version>${com.beust.jcommander.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
+      <version>${org.apache.commons.version}</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
