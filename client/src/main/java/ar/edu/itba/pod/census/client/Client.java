@@ -1,12 +1,21 @@
 package ar.edu.itba.pod.census.client;
 
+import ar.edu.itba.pod.census.client.args.ClientArgs;
+import com.beust.jcommander.JCommander;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Client {
-    private static Logger logger = LoggerFactory.getLogger(Client.class);
+public final class Client {
 
-    public static void main(String[] args) {
-        logger.info("census Client Starting ...");
+    private final static Logger logger = LoggerFactory.getLogger(Client.class);
+
+    private static final ClientArgs clientArgs = ClientArgs.getInstance();
+
+    public static void main(final String[] args) {
+        parseClientArguments(args);
+    }
+
+    private static void parseClientArguments(final String[] args) {
+        JCommander.newBuilder().addObject(clientArgs).build().parse(args);
     }
 }

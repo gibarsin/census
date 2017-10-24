@@ -19,6 +19,7 @@
     <log4j-bom.version>2.9.1</log4j-bom.version>
     <ch.qos.logback.version>1.2.3</ch.qos.logback.version>
     <org.slf4j>1.7.25</org.slf4j>
+    <com.beust.jcommander.version>1.72</com.beust.jcommander.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -30,6 +31,11 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
+    <dependency>
+      <groupId>com.beust</groupId>
+      <artifactId>jcommander</artifactId>
+      <version>${com.beust.jcommander.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
