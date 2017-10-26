@@ -1,18 +1,18 @@
 package ar.edu.itba.pod.census.client;
 
+import ar.edu.itba.pod.census.model.Citizen;
 import java.io.Closeable;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Iterator;
-import java.util.function.Consumer;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class CensusCSVRecords implements Iterator<CSVRecord>, Closeable, AutoCloseable {
+public final class CensusCSVRecords implements Iterator<Citizen>, Closeable, AutoCloseable {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(CensusCSVRecords.class);
 
@@ -33,18 +33,19 @@ public final class CensusCSVRecords implements Iterator<CSVRecord>, Closeable, A
   }
 
   @Override
-  public CSVRecord next() {
-    return recordsIterator.next();
+  public Citizen next() {
+    final CSVRecord record = recordsIterator.next();
+
+    return new Citizen(
+        Integer.parseInt(record.get(Headers.EMPLOYMENT_STATUS).trim()),
+        Integer.parseInt(record.get(Headers.HOME_ID).trim()),
+        record.get(Headers.DEPARTMENT_NAME),
+        record.get(Headers.PROVINCE_NAME));
   }
 
   @Override
   public void remove() {
     recordsIterator.remove();
-  }
-
-  @Override
-  public void forEachRemaining(final Consumer<? super CSVRecord> action) {
-    recordsIterator.forEachRemaining(action);
   }
 
   @Override
