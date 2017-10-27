@@ -5,9 +5,11 @@ import ar.edu.itba.pod.census.combiner.DepartmentPopulationCombinerFactory;
 import ar.edu.itba.pod.census.combiner.RegionPopulationCombinerFactory;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
 import ar.edu.itba.pod.census.mapper.DepartmentPopulationMapper;
+import ar.edu.itba.pod.census.mapper.RegionOccupationMapper;
 import ar.edu.itba.pod.census.mapper.RegionPopulationMapper;
 import ar.edu.itba.pod.census.model.Citizen;
 import ar.edu.itba.pod.census.reducer.DepartmentPopulationReducerFactory;
+import ar.edu.itba.pod.census.reducer.RegionOccupationReducerFactory;
 import ar.edu.itba.pod.census.reducer.RegionPopulationReducerFactory;
 import com.beust.jcommander.JCommander;
 import com.hazelcast.client.HazelcastClient;
@@ -85,6 +87,9 @@ public final class Client {
       case 2:
         startQuery2();
         break;
+      case 3:
+        startQuery3();
+        break;
     }
   }
 
@@ -137,6 +142,32 @@ public final class Client {
       final Map<String, Integer> response = futureResponse.get();
       LOGGER.info("Job successful");
       for (final Map.Entry<String, Integer> entry : response.entrySet()) {
+        System.out.println(entry.getKey() + " -> " + entry.getValue());
+      }
+    } catch (final InterruptedException | ExecutionException exeption) {
+      LOGGER.error("Job failed", exeption);
+    }
+  }
+
+  private static void startQuery3() {
+    LOGGER.debug("Submitting job...");
+    final JobTracker jobTracker = HAZELCAST_CLIENT.getJobTracker(SharedConfiguration.TRACKER_NAME);
+    final IMap<Long, Citizen> map = HAZELCAST_CLIENT.getMap(SharedConfiguration.MAP_NAME);
+    final KeyValueSource<Long, Citizen> source = KeyValueSource.fromMap(map);
+    final Job<Long, Citizen> job = jobTracker.newJob(source);
+
+    final Mapper<Long, Citizen, String, Boolean> mapper = new RegionOccupationMapper();
+    final ReducerFactory<String, Boolean, Double> reducerFactory = new RegionOccupationReducerFactory();
+    final ICompletableFuture<Map<String, Double>> futureResponse = job
+        .mapper(mapper)
+        .reducer(reducerFactory)
+        .submit();
+    LOGGER.info("Job submitted");
+
+    try {
+      final Map<String, Double> response = futureResponse.get();
+      LOGGER.info("Job successful");
+      for (final Map.Entry<String, Double> entry : response.entrySet()) {
         System.out.println(entry.getKey() + " -> " + entry.getValue());
       }
     } catch (final InterruptedException | ExecutionException exeption) {
