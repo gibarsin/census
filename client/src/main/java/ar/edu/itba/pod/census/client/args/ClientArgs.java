@@ -40,7 +40,7 @@ public final class ClientArgs {
   private Integer n;
 
   @Parameter(names = {"-prov", "-province"})
-  private Integer province;
+  private String province;
 
   private ClientArgs() {
   }
@@ -77,7 +77,7 @@ public final class ClientArgs {
     return Objects.requireNonNull(n);
   }
 
-  public Integer getProvince() {
+  public String getProvince() {
     if (QUERIES_PROVINCE.contains(query)) {
       throw new IllegalStateException("Province is undefined for this query");
     }
