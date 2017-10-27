@@ -7,9 +7,9 @@ public final class QueryArgValidator implements IParameterValidator {
 
   @Override
   public void validate(final String name, final String value) throws ParameterException {
-    final Integer query = Integer.parseInt(value);
+    final int query = Integer.parseInt(value);
 
-    if (1 > query || 7 < query) {
+    if (query < 1 || query > 7) {
       throw new ParameterException("Query should be between 1 (inclusive) and 7 (inclusive)");
     }
   }
