@@ -20,11 +20,14 @@ public final class CensusCSVRecords implements Iterator<Citizen>, Closeable, Aut
   private final CSVParser parser;
   private final Iterator<CSVRecord> recordsIterator;
 
-  /* package-private */ CensusCSVRecords(final String csvFilePath) throws IOException {
-
+  private CensusCSVRecords(final String csvFilePath) throws IOException {
     this.inFile = new FileReader(csvFilePath);
     this.parser = CSVFormat.DEFAULT.withHeader(Headers.class).parse(inFile);
     this.recordsIterator = parser.iterator();
+  }
+
+  public static CensusCSVRecords open(final String csvFilePath) throws IOException {
+    return new CensusCSVRecords(csvFilePath);
   }
 
   @Override

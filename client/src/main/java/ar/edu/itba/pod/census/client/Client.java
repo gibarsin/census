@@ -1,33 +1,21 @@
 package ar.edu.itba.pod.census.client;
 
 import ar.edu.itba.pod.census.client.args.ClientArgs;
-import ar.edu.itba.pod.census.combiner.DepartmentPopulationCombinerFactory;
-import ar.edu.itba.pod.census.combiner.RegionPopulationCombinerFactory;
+import ar.edu.itba.pod.census.client.query.DepartmentPopulationQuery;
+import ar.edu.itba.pod.census.client.query.RegionOccupationQuery;
+import ar.edu.itba.pod.census.client.query.RegionPopulationQuery;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
-import ar.edu.itba.pod.census.mapper.DepartmentPopulationMapper;
-import ar.edu.itba.pod.census.mapper.RegionOccupationMapper;
-import ar.edu.itba.pod.census.mapper.RegionPopulationMapper;
-import ar.edu.itba.pod.census.model.Citizen;
-import ar.edu.itba.pod.census.reducer.DepartmentPopulationReducerFactory;
-import ar.edu.itba.pod.census.reducer.RegionOccupationReducerFactory;
-import ar.edu.itba.pod.census.reducer.RegionPopulationReducerFactory;
 import com.beust.jcommander.JCommander;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ICompletableFuture;
-import com.hazelcast.core.IMap;
-import com.hazelcast.mapreduce.CombinerFactory;
-import com.hazelcast.mapreduce.Job;
-import com.hazelcast.mapreduce.JobTracker;
-import com.hazelcast.mapreduce.KeyValueSource;
-import com.hazelcast.mapreduce.Mapper;
-import com.hazelcast.mapreduce.ReducerFactory;
+import java.io.Closeable;
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,16 +25,21 @@ public final class Client {
 
   private static final ClientArgs CLIENT_ARGS = ClientArgs.getInstance();
 
-  private static final HazelcastInstance HAZELCAST_CLIENT = createHazelcastClient(); // TODO: Move to main()
-
   private Client() {
   }
 
   public static void main(final String[] args) {
     parseClientArguments(args);
-    loadInputFileAndPopulateHazelcastMap(Client::populateHazelcastMapWithRecords);
-    startHazelcastJob();
-    // TODO: Shutdown hazelcast
+
+    final HazelcastInstance hazelcastClient = createHazelcastClient();
+
+    final CensusCSVRecords csvRecords = loadInputFile();
+    fillData(hazelcastClient, csvRecords);
+    close(csvRecords);
+
+    handleQuery(hazelcastClient);
+
+    hazelcastClient.shutdown();
   }
 
   private static void parseClientArguments(final String[] args) {
@@ -57,111 +50,100 @@ public final class Client {
         .parse(args);
   }
 
-  private static void loadInputFileAndPopulateHazelcastMap(
-      final Consumer<Iterator<Citizen>> consumer) {
-    try (CensusCSVRecords csvRecords = new CensusCSVRecords(CLIENT_ARGS.getInPath())) {
-      consumer.accept(csvRecords);
+  private static HazelcastInstance createHazelcastClient() {
+    final ClientConfig clientConfig = new ClientConfig();
+
+    clientConfig.getGroupConfig()
+        .setName(SharedConfiguration.GROUP_USERNAME)
+        .setPassword(SharedConfiguration.GROUP_PASSWORD);
+
+    return HazelcastClient.newHazelcastClient(clientConfig);
+  }
+
+  private static CensusCSVRecords loadInputFile() {
+    CensusCSVRecords csvRecords = null;
+    try {
+      csvRecords = CensusCSVRecords.open(CLIENT_ARGS.getInPath());
     } catch (final IOException exception) {
-      System.err.println("There was an error while trying to read the input file");
+      System.err.println("There was an error while trying to open/read the input file");
       LOGGER.error("Could not open/read input file", exception);
       System.exit(1);
     }
+
+    return csvRecords;
   }
 
-  // Query dependant
-  private static void populateHazelcastMapWithRecords(final Iterator<Citizen> citizenRecords) {
-    final Map<Long, Citizen> map = HAZELCAST_CLIENT.getMap(SharedConfiguration.MAP_NAME);
-
-    long id = 0;
-    while (citizenRecords.hasNext()) {
-      final Citizen citizen = citizenRecords.next();
-      map.put(id++, citizen);
-    }
-  }
-
-  private static void startHazelcastJob() {
+  private static void fillData(final HazelcastInstance hazelcastClient,
+      final CensusCSVRecords csvRecords) {
     switch (CLIENT_ARGS.getQuery()) {
       case 1:
-        startQuery1();
+        RegionPopulationQuery.fillData(hazelcastClient, csvRecords);
         break;
+
       case 2:
-        startQuery2();
+        DepartmentPopulationQuery.fillData(hazelcastClient, csvRecords);
         break;
+
       case 3:
-        startQuery3();
         break;
     }
   }
 
-  private static void startQuery1() {
-    LOGGER.debug("Submitting job...");
-    final JobTracker jobTracker = HAZELCAST_CLIENT.getJobTracker(SharedConfiguration.TRACKER_NAME);
-    final IMap<Long, Citizen> map = HAZELCAST_CLIENT.getMap(SharedConfiguration.MAP_NAME);
-    final KeyValueSource<Long, Citizen> source = KeyValueSource.fromMap(map);
-    final Job<Long, Citizen> job = jobTracker.newJob(source);
+  private static void handleQuery(final HazelcastInstance hazelcastClient) {
+    switch (CLIENT_ARGS.getQuery()) {
+      case 1:
+        handleQuery1(hazelcastClient);
+        break;
 
-    final Mapper<Long, Citizen, String, Long> mapper = new RegionPopulationMapper();
-    final CombinerFactory<String, Long, Long> combinerFactory = new RegionPopulationCombinerFactory();
-    final ReducerFactory<String, Long, Long> reducerFactory = new RegionPopulationReducerFactory();
-    final ICompletableFuture<Map<String, Long>> futureResponse = job
-        .mapper(mapper)
-        .combiner(combinerFactory)
-        .reducer(reducerFactory)
-        .submit();
-    LOGGER.info("Job submitted");
+      case 2:
+        handleQuery2(hazelcastClient);
+        break;
 
-    try {
-      final Map<String, Long> response = futureResponse.get();
-      LOGGER.info("Job successful");
-      for (final Map.Entry<String, Long> entry : response.entrySet()) {
-        System.out.println(entry.getKey() + " -> " + entry.getValue());
-      }
-    } catch (final InterruptedException | ExecutionException exeption) {
-      LOGGER.error("Job failed", exeption);
+      case 3:
+        handleQuery3(hazelcastClient);
+        break;
     }
   }
 
-  private static void startQuery2() {
+  private static void handleQuery1(final HazelcastInstance hazelcastClient) {
     LOGGER.debug("Submitting job...");
-    final JobTracker jobTracker = HAZELCAST_CLIENT.getJobTracker(SharedConfiguration.TRACKER_NAME);
-    final IMap<Long, Citizen> map = HAZELCAST_CLIENT.getMap(SharedConfiguration.MAP_NAME);
-    final KeyValueSource<Long, Citizen> source = KeyValueSource.fromMap(map);
-    final Job<Long, Citizen> job = jobTracker.newJob(source);
-
-    final Mapper<Long, Citizen, String, Integer> mapper = new DepartmentPopulationMapper();
-    final CombinerFactory<String, Integer, Integer> combinerFactory = new DepartmentPopulationCombinerFactory();
-    final ReducerFactory<String, Integer, Integer> reducerFactory = new DepartmentPopulationReducerFactory();
-    final ICompletableFuture<Map<String, Integer>> futureResponse = job
-        .mapper(mapper)
-        .combiner(combinerFactory)
-        .reducer(reducerFactory)
-        .submit();
+    final ICompletableFuture<List<Entry<String, Long>>> futureResponse =
+        RegionPopulationQuery.start(hazelcastClient);
     LOGGER.info("Job submitted");
 
     try {
-      final Map<String, Integer> response = futureResponse.get();
+      final List<Entry<String, Long>> response = futureResponse.get();
       LOGGER.info("Job successful");
-      for (final Map.Entry<String, Integer> entry : response.entrySet()) {
+
+      for (final Entry<String, Long> entry : response) {
         System.out.println(entry.getKey() + " -> " + entry.getValue());
       }
-    } catch (final InterruptedException | ExecutionException exeption) {
-      LOGGER.error("Job failed", exeption);
+    } catch (final InterruptedException | ExecutionException exception) {
+      LOGGER.error("Job failed", exception);
     }
   }
 
-  private static void startQuery3() {
+  private static void handleQuery2(final HazelcastInstance hazelcastClient) {
     LOGGER.debug("Submitting job...");
-    final JobTracker jobTracker = HAZELCAST_CLIENT.getJobTracker(SharedConfiguration.TRACKER_NAME);
-    final IMap<Long, Citizen> map = HAZELCAST_CLIENT.getMap(SharedConfiguration.MAP_NAME);
-    final KeyValueSource<Long, Citizen> source = KeyValueSource.fromMap(map);
-    final Job<Long, Citizen> job = jobTracker.newJob(source);
+    final ICompletableFuture<List<Entry<String, Integer>>> futureResponse =
+        DepartmentPopulationQuery.start(hazelcastClient, CLIENT_ARGS.getN());
+    LOGGER.info("Job submitted");
 
-    final Mapper<Long, Citizen, String, Boolean> mapper = new RegionOccupationMapper();
-    final ReducerFactory<String, Boolean, Double> reducerFactory = new RegionOccupationReducerFactory();
-    final ICompletableFuture<Map<String, Double>> futureResponse = job
-        .mapper(mapper)
-        .reducer(reducerFactory)
-        .submit();
+    try {
+      final List<Entry<String, Integer>> response = futureResponse.get();
+      LOGGER.info("Job successful");
+      for (final Entry<String, Integer> entry : response) {
+        System.out.println(entry.getKey() + " -> " + entry.getValue());
+      }
+    } catch (final InterruptedException | ExecutionException exception) {
+      LOGGER.error("Job failed", exception);
+    }
+  }
+
+  private static void handleQuery3(final HazelcastInstance hazelcastClient) {
+    LOGGER.debug("Submitting job...");
+    final ICompletableFuture<Map<String, Double>> futureResponse =
+        RegionOccupationQuery.start(hazelcastClient, CLIENT_ARGS.getN());
     LOGGER.info("Job submitted");
 
     try {
@@ -170,22 +152,16 @@ public final class Client {
       for (final Map.Entry<String, Double> entry : response.entrySet()) {
         System.out.println(entry.getKey() + " -> " + entry.getValue());
       }
-    } catch (final InterruptedException | ExecutionException exeption) {
-      LOGGER.error("Job failed", exeption);
+    } catch (final InterruptedException | ExecutionException exception) {
+      LOGGER.error("Job failed", exception);
     }
   }
 
-  private static HazelcastInstance createHazelcastClient() {
-    return HazelcastClient.newHazelcastClient(createClientConfigWithCredentials());
-  }
-
-  private static ClientConfig createClientConfigWithCredentials() {
-    final ClientConfig clientConfig = new ClientConfig();
-
-    clientConfig.getGroupConfig()
-        .setName(SharedConfiguration.GROUP_USERNAME)
-        .setPassword(SharedConfiguration.GROUP_PASSWORD);
-
-    return clientConfig;
+  private static void close(final Closeable closeable) {
+    try {
+      closeable.close();
+    } catch (final IOException exception) {
+      LOGGER.error("There was an error while closing the file", exception);
+    }
   }
 }
