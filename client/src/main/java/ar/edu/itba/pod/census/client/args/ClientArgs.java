@@ -70,7 +70,7 @@ public final class ClientArgs {
   }
 
   public Integer getN() {
-    if (QUERIES_N.contains(query)) {
+    if (!QUERIES_N.contains(query)) {
       throw new IllegalStateException("N is undefined for this query");
     }
 
@@ -78,7 +78,7 @@ public final class ClientArgs {
   }
 
   public String getProvince() {
-    if (QUERIES_PROVINCE.contains(query)) {
+    if (!QUERIES_PROVINCE.contains(query)) {
       throw new IllegalStateException("Province is undefined for this query");
     }
 
