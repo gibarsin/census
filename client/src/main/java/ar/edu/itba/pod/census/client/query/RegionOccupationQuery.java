@@ -5,8 +5,7 @@ import ar.edu.itba.pod.census.client.CensusCSVRecords.Headers;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
 import ar.edu.itba.pod.census.mapper.RegionOccupationMapper;
 import ar.edu.itba.pod.census.model.Citizen;
-import ar.edu.itba.pod.census.model.Citizen.EMPLOYMENT_STATUS;
-import ar.edu.itba.pod.census.predicate.MapFilter;
+import ar.edu.itba.pod.census.predicate.RegionOccupationFilter;
 import ar.edu.itba.pod.census.reducer.RegionOccupationReducerFactory;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ICompletableFuture;
@@ -48,9 +47,7 @@ public final class RegionOccupationQuery {
     final KeyValueSource<Long, Citizen> source = KeyValueSource.fromMap(map);
     final Job<Long, Citizen> job = jobTracker.newJob(source);
 
-    final KeyPredicate<Long> predicate = new MapFilter<>(map,
-        (k, v) -> v.getEmploymentStatus() == EMPLOYMENT_STATUS.EMPLOYED
-            || v.getEmploymentStatus() == EMPLOYMENT_STATUS.UNEMPLOYED);
+    final KeyPredicate<Long> predicate = new RegionOccupationFilter(SharedConfiguration.STRUCTURE_NAME);
     final Mapper<Long, Citizen, String, Integer> mapper = new RegionOccupationMapper();
     final ReducerFactory<String, Integer, Double> reducerFactory = new RegionOccupationReducerFactory();
 
