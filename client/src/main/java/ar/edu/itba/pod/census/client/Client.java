@@ -138,8 +138,8 @@ public final class Client {
 
   private static void handleQuery2(final HazelcastInstance hazelcastClient) {
     LOGGER.debug("Submitting job...");
-    final ICompletableFuture<List<Entry<String, Integer>>> futureResponse =
-        DepartmentPopulationQuery.start(hazelcastClient, CLIENT_ARGS.getN());
+    final ICompletableFuture<List<Entry<String, Integer>>> futureResponse = DepartmentPopulationQuery
+        .start(hazelcastClient, CLIENT_ARGS.getProvince(), CLIENT_ARGS.getN());
     LOGGER.info("Job submitted");
 
     try {

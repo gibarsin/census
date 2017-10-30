@@ -7,7 +7,6 @@ public class RegionOccupationReducerFactory implements ReducerFactory<String, In
 
   @Override
   public Reducer<Integer, Double> newReducer(final String region) {
-    System.out.println("Reducer for: " + region);
     return new RegionOccupationReducer();
   }
 
