@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.census.client;
 
 import ar.edu.itba.pod.census.client.args.ClientArgs;
+import ar.edu.itba.pod.census.client.query.DepartmentCountQuery;
 import ar.edu.itba.pod.census.client.query.DepartmentPopulationQuery;
 import ar.edu.itba.pod.census.client.query.HomesInRegionQuery;
 import ar.edu.itba.pod.census.client.query.RegionOccupationQuery;
@@ -95,6 +96,10 @@ public final class Client {
       case 4:
         HomesInRegionQuery.fillData(hazelcastClient, records);
         break;
+
+      case 6:
+        DepartmentCountQuery.fillData(hazelcastClient, records);
+        break;
     }
   }
 
@@ -114,6 +119,10 @@ public final class Client {
 
       case 4:
         handleQuery4(hazelcastClient);
+        break;
+
+      case 6:
+        handleQuery6(hazelcastClient);
         break;
     }
   }
@@ -174,6 +183,24 @@ public final class Client {
     LOGGER.debug("Submitting job...");
     final ICompletableFuture<List<Entry<String, Integer>>> futureResponse =
         HomesInRegionQuery.start(hazelcastClient);
+    LOGGER.info("Job submitted");
+
+    try {
+      final List<Entry<String, Integer>> response = futureResponse.get();
+      LOGGER.info("Job successful");
+
+      for (final Entry<String, Integer> entry : response) {
+        System.out.println(entry.getKey() + " -> " + entry.getValue());
+      }
+    } catch (final InterruptedException | ExecutionException exception) {
+      LOGGER.error("Job failed", exception);
+    }
+  }
+
+  private static void handleQuery6(final HazelcastInstance hazelcastClient) {
+    LOGGER.debug("Submitting job...");
+    final ICompletableFuture<List<Entry<String, Integer>>> futureResponse =
+        DepartmentCountQuery.start(hazelcastClient, CLIENT_ARGS.getN());
     LOGGER.info("Job submitted");
 
     try {
