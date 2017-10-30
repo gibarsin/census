@@ -3,14 +3,14 @@ package ar.edu.itba.pod.census.reducer;
 import com.hazelcast.mapreduce.Reducer;
 import com.hazelcast.mapreduce.ReducerFactory;
 
-public class RegionPopulationReducerFactory implements ReducerFactory<String, Integer, Integer> {
+public class HomesInRegionReducerFactory implements ReducerFactory<String, Integer, Integer> {
 
   @Override
   public Reducer<Integer, Integer> newReducer(final String key) {
-    return new RegionPopulationReducer();
+    return new HomesInRegionReducer();
   }
 
-  private class RegionPopulationReducer extends Reducer<Integer, Integer> {
+  private class HomesInRegionReducer extends Reducer<Integer, Integer> {
 
     private volatile int sum = 0;
 

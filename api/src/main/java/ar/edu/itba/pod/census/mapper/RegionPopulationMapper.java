@@ -4,10 +4,10 @@ import ar.edu.itba.pod.census.model.Citizen;
 import com.hazelcast.mapreduce.Context;
 import com.hazelcast.mapreduce.Mapper;
 
-public class RegionPopulationMapper implements Mapper<Long, Citizen, String, Long> {
+public class RegionPopulationMapper implements Mapper<String, Citizen, String, Integer> {
 
   @Override
-  public void map(final Long key, final Citizen citizen, final Context<String, Long> context) {
-    context.emit(citizen.getRegion(), 1L);
+  public void map(final String key, final Citizen citizen, final Context<String, Integer> context) {
+    context.emit(citizen.getRegion(), 1);
   }
 }

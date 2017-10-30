@@ -1,6 +1,5 @@
 package ar.edu.itba.pod.census.client;
 
-import ar.edu.itba.pod.census.model.Citizen;
 import java.io.Closeable;
 import java.io.FileReader;
 import java.io.IOException;
@@ -12,7 +11,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class CensusCSVRecords implements Iterator<Citizen>, Closeable, AutoCloseable {
+public final class CensusCSVRecords implements Iterator<CSVRecord>, Closeable, AutoCloseable {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(CensusCSVRecords.class);
 
@@ -36,14 +35,8 @@ public final class CensusCSVRecords implements Iterator<Citizen>, Closeable, Aut
   }
 
   @Override
-  public Citizen next() {
-    final CSVRecord record = recordsIterator.next();
-
-    return new Citizen(
-        Integer.parseInt(record.get(Headers.EMPLOYMENT_STATUS).trim()),
-        Integer.parseInt(record.get(Headers.HOME_ID).trim()),
-        record.get(Headers.DEPARTMENT_NAME),
-        record.get(Headers.PROVINCE_NAME));
+  public CSVRecord next() {
+    return recordsIterator.next();
   }
 
   @Override

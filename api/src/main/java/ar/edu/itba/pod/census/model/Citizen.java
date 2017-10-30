@@ -11,13 +11,13 @@ public class Citizen implements Serializable {
   private final String province;
   private final String region;
 
-  public Citizen(final int employmentStatus, final int homeId,
-      final String departmentName, final String province) {
+  public Citizen(final int employmentStatus, final int homeId, final String departmentName,
+      final String province) {
     this.employmentStatus = EMPLOYMENT_STATUS.valueOf(employmentStatus);
     this.homeId = homeId;
     this.departmentName = Objects.requireNonNull(departmentName);
     this.province = Objects.requireNonNull(province);
-    this.region = provinceRegion(province);
+    this.region = Region.fromProvince(province);
   }
 
   public EMPLOYMENT_STATUS getEmploymentStatus() {
@@ -38,46 +38,6 @@ public class Citizen implements Serializable {
 
   public String getRegion() {
     return region;
-  }
-
-  private static String provinceRegion(final String province) {
-    switch (province.toLowerCase()) {
-      case "jujuy":
-      case "salta":
-      case "catamarca":
-      case "tucumán":
-      case "santiago del estero":
-      case "chaco":
-      case "formosa":
-      case "corrientes":
-      case "misiones":
-        return "Región del Norte Grande Argentino";
-
-      case "la rioja":
-      case "san juan":
-      case "mendoza":
-      case "san luis":
-        return "Región del Nuevo Cuyo";
-
-      case "córdoba":
-      case "santa fe":
-      case "entre ríos":
-        return "Región Centro";
-
-      case "buenos aires":
-      case "ciudad autónoma de buenos aires":
-        return "Región Buenos Aires";
-
-      case "neuquén":
-      case "la pampa":
-      case "río negro":
-      case "chubut":
-      case "santa cruz":
-      case "tierra del fuego":
-        return "Región Patagónica";
-    }
-
-    throw new IllegalArgumentException("Invalid province");
   }
 
   public enum EMPLOYMENT_STATUS {

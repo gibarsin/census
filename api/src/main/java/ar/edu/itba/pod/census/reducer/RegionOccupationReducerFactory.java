@@ -3,29 +3,27 @@ package ar.edu.itba.pod.census.reducer;
 import com.hazelcast.mapreduce.Reducer;
 import com.hazelcast.mapreduce.ReducerFactory;
 
-public class RegionOccupationReducerFactory implements ReducerFactory<String, Boolean, Double> {
+public class RegionOccupationReducerFactory implements ReducerFactory<String, Integer, Double> {
 
   @Override
-  public Reducer<Boolean, Double> newReducer(final String region) {
+  public Reducer<Integer, Double> newReducer(final String region) {
     return new RegionOccupationReducer();
   }
 
-  private class RegionOccupationReducer extends Reducer<Boolean, Double> {
+  private class RegionOccupationReducer extends Reducer<Integer, Double> {
 
-    private int unoccupied = 0;
-    private int total = 0;
+    private volatile int unemployed = 0;
+    private volatile int total = 0;
 
     @Override
-    public void reduce(final Boolean isOccupied) {
+    public void reduce(final Integer value) {
+      unemployed += value;
       total++;
-      if (!isOccupied) {
-        unoccupied++;
-      }
     }
 
     @Override
     public Double finalizeReduce() {
-      return (double) unoccupied / total;
+      return (double) unemployed / total;
     }
   }
 }
