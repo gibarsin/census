@@ -5,6 +5,7 @@ import ar.edu.itba.pod.census.client.query.CitizensPerHomeInRegionQuery;
 import ar.edu.itba.pod.census.client.query.DepartmentCountQuery;
 import ar.edu.itba.pod.census.client.query.DepartmentPopulationQuery;
 import ar.edu.itba.pod.census.client.query.HomesInRegionQuery;
+import ar.edu.itba.pod.census.client.query.IQuery;
 import ar.edu.itba.pod.census.client.query.RegionOccupationQuery;
 import ar.edu.itba.pod.census.client.query.RegionPopulationQuery;
 import ar.edu.itba.pod.census.client.query.SharedDepartmentCountQuery;
@@ -25,20 +26,28 @@ import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("Duplicates") // TODO: Remove
 public final class Client {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
   private static final ClientArgs CLIENT_ARGS = ClientArgs.getInstance();
 
-  private Client() {
+  // IMPORTANT: Ordinals are in use. Update this with caution
+  private enum Query {
+    REGION_POPULATION, DEPARTMENT_POPULATION, REGION_OCCUPATION,
+    HOMES_IN_REGION, CITIZENS_PER_HOME_IN_REGION,
+    DEPARTMENT_COUNT, SHARED_DEPARTMENT_COUNT
   }
 
   public static void main(final String[] args) {
     parseClientArguments(args);
 
     final HazelcastInstance hazelcastClient = createHazelcastClient();
+
+    final IQuery query = buildQuery(CLIENT_ARGS, hazelcastClient);
+    query.run();
+
+    hazelcastClient.shutdown();
 
     final CensusCSVRecords csvRecords = loadInputFile();
     fillData(hazelcastClient, csvRecords);
@@ -49,12 +58,42 @@ public final class Client {
     hazelcastClient.shutdown();
   }
 
+  // TODO: Implement later with builders
+  private static IQuery buildQuery(ClientArgs clientArgs, HazelcastInstance hazelcastClient) {
+    // Queries index is offset by 1 to the left (i.e., query 1 is index 0, query 2 index 1 and so on...)
+    switch (Query.values()[clientArgs.getQuery() - 1]) {
+      case REGION_POPULATION:
+        return new RegionPopulationQuery();
+      break;
+      case DEPARTMENT_POPULATION:
+        return new DepartmentPopulationQuery();
+      break;
+      case REGION_OCCUPATION:
+        return new RegionOccupationQuery();
+      break;
+      case HOMES_IN_REGION:
+        return new HomesInRegionQuery();
+      break;
+      case CITIZENS_PER_HOME_IN_REGION:
+        return new CitizensPerHomeInRegionQuery();
+        break;
+      case DEPARTMENT_COUNT:
+        return new DepartmentCountQuery();
+      break;
+      case SHARED_DEPARTMENT_COUNT:
+        return new SharedDepartmentCountQuery();
+      break;
+      default:
+        throw new IllegalStateException("No query selected");
+    }
+  }
+
   private static void parseClientArguments(final String[] args) {
     JCommander.newBuilder()
-        .addObject(CLIENT_ARGS)
-        .defaultProvider(ClientArgs.SYSTEM_PROPERTIES_PROVIDER)
-        .build()
-        .parse(args);
+            .addObject(CLIENT_ARGS)
+            .defaultProvider(ClientArgs.SYSTEM_PROPERTIES_PROVIDER)
+            .build()
+            .parse(args);
   }
 
   private static HazelcastInstance createHazelcastClient() {
@@ -63,8 +102,8 @@ public final class Client {
     clientConfig.getNetworkConfig().setAddresses(CLIENT_ARGS.getAddresses());
 
     clientConfig.getGroupConfig()
-        .setName(SharedConfiguration.GROUP_USERNAME)
-        .setPassword(SharedConfiguration.GROUP_PASSWORD);
+            .setName(SharedConfiguration.GROUP_USERNAME)
+            .setPassword(SharedConfiguration.GROUP_PASSWORD);
 
     return HazelcastClient.newHazelcastClient(clientConfig);
   }
@@ -83,7 +122,7 @@ public final class Client {
   }
 
   private static void fillData(final HazelcastInstance hazelcastClient,
-      final CensusCSVRecords records) {
+                               final CensusCSVRecords records) {
     switch (CLIENT_ARGS.getQuery()) {
       case 1:
         RegionPopulationQuery.fillData(hazelcastClient, records);
@@ -143,7 +182,7 @@ public final class Client {
   private static void handleQuery5(final HazelcastInstance hazelcastClient) {
     LOGGER.debug("Submitting job...");
     final ICompletableFuture<List<Entry<Region, BigDecimal>>> futureResponse =
-        CitizensPerHomeInRegionQuery.start(hazelcastClient);
+            CitizensPerHomeInRegionQuery.start(hazelcastClient);
     LOGGER.info("Job submitted");
 
     try {
@@ -161,7 +200,7 @@ public final class Client {
   private static void handleQuery1(final HazelcastInstance hazelcastClient) {
     LOGGER.debug("Submitting job...");
     final ICompletableFuture<List<Entry<String, Integer>>> futureResponse =
-        RegionPopulationQuery.start(hazelcastClient);
+            RegionPopulationQuery.start(hazelcastClient);
     LOGGER.info("Job submitted");
 
     try {
@@ -179,7 +218,7 @@ public final class Client {
   private static void handleQuery2(final HazelcastInstance hazelcastClient) {
     LOGGER.debug("Submitting job...");
     final ICompletableFuture<List<Entry<String, Integer>>> futureResponse = DepartmentPopulationQuery
-        .start(hazelcastClient, CLIENT_ARGS.getProvince(), CLIENT_ARGS.getN());
+            .start(hazelcastClient, CLIENT_ARGS.getProvince(), CLIENT_ARGS.getN());
     LOGGER.info("Job submitted");
 
     try {
@@ -196,7 +235,7 @@ public final class Client {
   private static void handleQuery3(final HazelcastInstance hazelcastClient) {
     LOGGER.debug("Submitting job...");
     final ICompletableFuture<Map<String, BigDecimal>> futureResponse =
-        RegionOccupationQuery.start(hazelcastClient);
+            RegionOccupationQuery.start(hazelcastClient);
     LOGGER.info("Job submitted");
 
     try {
@@ -213,7 +252,7 @@ public final class Client {
   private static void handleQuery4(final HazelcastInstance hazelcastClient) {
     LOGGER.debug("Submitting job...");
     final ICompletableFuture<List<Entry<String, Integer>>> futureResponse =
-        HomesInRegionQuery.start(hazelcastClient);
+            HomesInRegionQuery.start(hazelcastClient);
     LOGGER.info("Job submitted");
 
     try {
@@ -231,7 +270,7 @@ public final class Client {
   private static void handleQuery6(final HazelcastInstance hazelcastClient) {
     LOGGER.debug("Submitting job...");
     final ICompletableFuture<List<Entry<String, Integer>>> futureResponse =
-        DepartmentCountQuery.start(hazelcastClient, CLIENT_ARGS.getN());
+            DepartmentCountQuery.start(hazelcastClient, CLIENT_ARGS.getN());
     LOGGER.info("Job submitted");
 
     try {
@@ -249,7 +288,7 @@ public final class Client {
   private static void handleQuery7(final HazelcastInstance hazelcastClient) {
     LOGGER.debug("Submitting job...");
     final ICompletableFuture<List<Entry<String, Integer>>> futureResponse =
-        SharedDepartmentCountQuery.start(hazelcastClient, CLIENT_ARGS.getN());
+            SharedDepartmentCountQuery.start(hazelcastClient, CLIENT_ARGS.getN());
     LOGGER.info("Job submitted");
 
     try {

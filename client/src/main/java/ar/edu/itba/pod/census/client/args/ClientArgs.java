@@ -16,8 +16,6 @@ public final class ClientArgs {
   public static final IDefaultProvider SYSTEM_PROPERTIES_PROVIDER =
       optionName -> System.getProperties().getProperty(optionName.replaceAll("^-+", ""));
 
-  private static final int QUERY_MAX = 7;
-  private static final int QUERY_MIN = 1;
   private static final List<Integer> QUERIES_N = Arrays.asList(2, 6, 7);
   private static final List<Integer> QUERIES_PROVINCE = Collections.singletonList(2);
 
