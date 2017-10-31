@@ -1,9 +1,10 @@
 package ar.edu.itba.pod.census.server;
 
-import ar.edu.itba.pod.census.config.SharedConfiguration;
 import com.hazelcast.config.Config;
+import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import java.io.FileNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,20 +15,16 @@ public final class Server {
   private Server() {
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws FileNotFoundException {
     LOGGER.debug("Server starting...");
     final HazelcastInstance hazelcastServer = createHazelcastServer();
     LOGGER.info("Server started");
   }
 
-  private static HazelcastInstance createHazelcastServer() {
-    final Config serverConfig = new Config();
-
-    serverConfig.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
-
-    serverConfig.getGroupConfig()
-        .setName(SharedConfiguration.GROUP_USERNAME)
-        .setPassword(SharedConfiguration.GROUP_PASSWORD);
+  private static HazelcastInstance createHazelcastServer() throws FileNotFoundException {
+    final Config serverConfig = new XmlConfigBuilder(
+        System.getProperty("user.dir") + "/hazelcast.xml")
+        .build();
 
     return Hazelcast.newHazelcastInstance(serverConfig);
   }
