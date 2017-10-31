@@ -2,15 +2,16 @@ package ar.edu.itba.pod.census.reducer;
 
 import com.hazelcast.mapreduce.Reducer;
 import com.hazelcast.mapreduce.ReducerFactory;
+import java.math.BigDecimal;
 
-public class RegionOccupationReducerFactory implements ReducerFactory<String, Integer, Double> {
+public class RegionOccupationReducerFactory implements ReducerFactory<String, Integer, BigDecimal> {
 
   @Override
-  public Reducer<Integer, Double> newReducer(final String region) {
+  public Reducer<Integer, BigDecimal> newReducer(final String region) {
     return new RegionOccupationReducer();
   }
 
-  private class RegionOccupationReducer extends Reducer<Integer, Double> {
+  private class RegionOccupationReducer extends Reducer<Integer, BigDecimal> {
 
     private volatile int unemployed = 0;
     private volatile int total = 0;
@@ -22,8 +23,8 @@ public class RegionOccupationReducerFactory implements ReducerFactory<String, In
     }
 
     @Override
-    public Double finalizeReduce() {
-      return (double) unemployed / total;
+    public BigDecimal finalizeReduce() {
+      return new BigDecimal((double) unemployed / total).setScale(2, BigDecimal.ROUND_HALF_EVEN);
     }
   }
 }

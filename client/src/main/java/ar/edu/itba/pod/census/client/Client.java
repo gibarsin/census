@@ -17,6 +17,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ICompletableFuture;
 import java.io.Closeable;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -141,15 +142,15 @@ public final class Client {
 
   private static void handleQuery5(final HazelcastInstance hazelcastClient) {
     LOGGER.debug("Submitting job...");
-    final ICompletableFuture<List<Entry<Region, Double>>> futureResponse =
+    final ICompletableFuture<List<Entry<Region, BigDecimal>>> futureResponse =
         CitizensPerHomeInRegionQuery.start(hazelcastClient);
     LOGGER.info("Job submitted");
 
     try {
-      final List<Entry<Region, Double>> response = futureResponse.get();
+      final List<Entry<Region, BigDecimal>> response = futureResponse.get();
       LOGGER.info("Job successful");
 
-      for (final Entry<Region, Double> entry : response) {
+      for (final Entry<Region, BigDecimal> entry : response) {
         System.out.println(entry.getKey() + " -> " + entry.getValue());
       }
     } catch (final InterruptedException | ExecutionException exception) {
@@ -194,14 +195,14 @@ public final class Client {
 
   private static void handleQuery3(final HazelcastInstance hazelcastClient) {
     LOGGER.debug("Submitting job...");
-    final ICompletableFuture<Map<String, Double>> futureResponse =
+    final ICompletableFuture<Map<String, BigDecimal>> futureResponse =
         RegionOccupationQuery.start(hazelcastClient);
     LOGGER.info("Job submitted");
 
     try {
-      final Map<String, Double> response = futureResponse.get();
+      final Map<String, BigDecimal> response = futureResponse.get();
       LOGGER.info("Job successful");
-      for (final Map.Entry<String, Double> entry : response.entrySet()) {
+      for (final Map.Entry<String, BigDecimal> entry : response.entrySet()) {
         System.out.println(entry.getKey() + " -> " + entry.getValue());
       }
     } catch (final InterruptedException | ExecutionException exception) {

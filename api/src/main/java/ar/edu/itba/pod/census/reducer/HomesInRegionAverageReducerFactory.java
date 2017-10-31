@@ -3,17 +3,19 @@ package ar.edu.itba.pod.census.reducer;
 import ar.edu.itba.pod.census.model.Region;
 import com.hazelcast.mapreduce.Reducer;
 import com.hazelcast.mapreduce.ReducerFactory;
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 
-public class HomesInRegionAverageReducerFactory implements ReducerFactory<Region, Integer, Double> {
+public class HomesInRegionAverageReducerFactory implements
+    ReducerFactory<Region, Integer, BigDecimal> {
 
   @Override
-  public Reducer<Integer, Double> newReducer(final Region region) {
+  public Reducer<Integer, BigDecimal> newReducer(final Region region) {
     return new HomesInRegionAverageReducer();
   }
 
-  private class HomesInRegionAverageReducer extends Reducer<Integer, Double> {
+  private class HomesInRegionAverageReducer extends Reducer<Integer, BigDecimal> {
 
     private final Set<Integer> homeIds = new HashSet<>();
 
@@ -26,8 +28,9 @@ public class HomesInRegionAverageReducerFactory implements ReducerFactory<Region
     }
 
     @Override
-    public Double finalizeReduce() {
-      return ((double) citizens) / homeIds.size();
+    public BigDecimal finalizeReduce() {
+      return new BigDecimal((double) citizens / homeIds.size())
+          .setScale(2, BigDecimal.ROUND_HALF_EVEN);
     }
   }
 }

@@ -16,6 +16,7 @@ import com.hazelcast.mapreduce.KeyPredicate;
 import com.hazelcast.mapreduce.KeyValueSource;
 import com.hazelcast.mapreduce.Mapper;
 import com.hazelcast.mapreduce.ReducerFactory;
+import java.math.BigDecimal;
 import java.util.Map;
 import org.apache.commons.csv.CSVRecord;
 
@@ -40,7 +41,7 @@ public final class RegionOccupationQuery {
     }
   }
 
-  public static ICompletableFuture<Map<String, Double>> start(
+  public static ICompletableFuture<Map<String, BigDecimal>> start(
       final HazelcastInstance hazelcastInstance) {
     final JobTracker jobTracker = hazelcastInstance.getJobTracker(SharedConfiguration.TRACKER_NAME);
     final IMap<Long, Citizen> map = hazelcastInstance.getMap(SharedConfiguration.STRUCTURE_NAME);
@@ -49,7 +50,7 @@ public final class RegionOccupationQuery {
 
     final KeyPredicate<Long> predicate = new RegionOccupationFilter(SharedConfiguration.STRUCTURE_NAME);
     final Mapper<Long, Citizen, String, Integer> mapper = new RegionOccupationMapper();
-    final ReducerFactory<String, Integer, Double> reducerFactory = new RegionOccupationReducerFactory();
+    final ReducerFactory<String, Integer, BigDecimal> reducerFactory = new RegionOccupationReducerFactory();
 
     return job
         .keyPredicate(predicate)

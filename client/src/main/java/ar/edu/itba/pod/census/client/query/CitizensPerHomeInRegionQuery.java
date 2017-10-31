@@ -17,6 +17,7 @@ import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
 import com.hazelcast.mapreduce.Mapper;
 import com.hazelcast.mapreduce.ReducerFactory;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -39,7 +40,7 @@ public class CitizensPerHomeInRegionQuery {
     }
   }
 
-  public static ICompletableFuture<List<Entry<Region, Double>>> start(
+  public static ICompletableFuture<List<Entry<Region, BigDecimal>>> start(
       final HazelcastInstance hazelcastInstance) {
     final JobTracker jobTracker = hazelcastInstance
         .getJobTracker(SharedConfiguration.TRACKER_NAME);
@@ -49,9 +50,9 @@ public class CitizensPerHomeInRegionQuery {
 
     final Mapper<String, Citizen, Region, Integer> mapper = new HomeRegionMapper();
     // TODO Check if I can use a set in a combiner
-    final ReducerFactory<Region, Integer, Double> reducerFactory = new HomesInRegionAverageReducerFactory();
-    final Collator<Entry<Region, Double>, List<Entry<Region, Double>>> collator =
-        new SortCollator<Region, Double>(Collections.reverseOrder(Entry.comparingByValue()));
+    final ReducerFactory<Region, Integer, BigDecimal> reducerFactory = new HomesInRegionAverageReducerFactory();
+    final Collator<Entry<Region, BigDecimal>, List<Entry<Region, BigDecimal>>> collator =
+        new SortCollator<Region, BigDecimal>(Collections.reverseOrder(Entry.comparingByValue()));
 
     return job
         .mapper(mapper)
