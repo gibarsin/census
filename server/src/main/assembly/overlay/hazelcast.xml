@@ -25,8 +25,8 @@
   xmlns="http://www.hazelcast.com/schema/config"
   xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-3.5.xsd">
   <group>
-    <name>cluster</name>
-    <password>cluster-pass</password>
+    <name>55309-54126-54182-54045</name>
+    <password>55309-54126-54182-54045</password>
   </group>
   <management-center enabled="false">http://localhost:8080/mancenter</management-center>
   <network>
