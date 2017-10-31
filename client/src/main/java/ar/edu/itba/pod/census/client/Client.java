@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.census.client;
 
 import ar.edu.itba.pod.census.client.args.ClientArgs;
+import ar.edu.itba.pod.census.client.query.CitizensPerHomeInRegionQuery;
 import ar.edu.itba.pod.census.client.query.DepartmentCountQuery;
 import ar.edu.itba.pod.census.client.query.DepartmentPopulationQuery;
 import ar.edu.itba.pod.census.client.query.HomesInRegionQuery;
@@ -8,6 +9,7 @@ import ar.edu.itba.pod.census.client.query.RegionOccupationQuery;
 import ar.edu.itba.pod.census.client.query.RegionPopulationQuery;
 import ar.edu.itba.pod.census.client.query.SharedDepartmentCountQuery;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
+import ar.edu.itba.pod.census.model.Region;
 import com.beust.jcommander.JCommander;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
@@ -93,15 +95,15 @@ public final class Client {
       case 3:
         RegionOccupationQuery.fillData(hazelcastClient, records);
         break;
-
       case 4:
         HomesInRegionQuery.fillData(hazelcastClient, records);
         break;
-
+      case 5:
+        CitizensPerHomeInRegionQuery.fillData(hazelcastClient, records);
+        break;
       case 6:
         DepartmentCountQuery.fillData(hazelcastClient, records);
         break;
-
       case 7:
         SharedDepartmentCountQuery.fillData(hazelcastClient, records);
         break;
@@ -125,14 +127,33 @@ public final class Client {
       case 4:
         handleQuery4(hazelcastClient);
         break;
-
+      case 5:
+        handleQuery5(hazelcastClient);
+        break;
       case 6:
         handleQuery6(hazelcastClient);
         break;
-
       case 7:
         handleQuery7(hazelcastClient);
         break;
+    }
+  }
+
+  private static void handleQuery5(final HazelcastInstance hazelcastClient) {
+    LOGGER.debug("Submitting job...");
+    final ICompletableFuture<List<Entry<Region, Double>>> futureResponse =
+        CitizensPerHomeInRegionQuery.start(hazelcastClient);
+    LOGGER.info("Job submitted");
+
+    try {
+      final List<Entry<Region, Double>> response = futureResponse.get();
+      LOGGER.info("Job successful");
+
+      for (final Entry<Region, Double> entry : response) {
+        System.out.println(entry.getKey() + " -> " + entry.getValue());
+      }
+    } catch (final InterruptedException | ExecutionException exception) {
+      LOGGER.error("Job failed", exception);
     }
   }
 
