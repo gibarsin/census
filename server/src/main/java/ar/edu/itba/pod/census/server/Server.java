@@ -23,6 +23,8 @@ public final class Server {
   private static HazelcastInstance createHazelcastServer() {
     final Config serverConfig = new Config();
 
+    serverConfig.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
+
     serverConfig.getGroupConfig()
         .setName(SharedConfiguration.GROUP_USERNAME)
         .setPassword(SharedConfiguration.GROUP_PASSWORD);

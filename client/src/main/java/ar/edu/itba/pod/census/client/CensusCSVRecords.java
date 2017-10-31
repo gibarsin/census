@@ -50,6 +50,7 @@ public final class CensusCSVRecords implements Iterator<CSVRecord>, Closeable, A
     inFile.close();
   }
 
+  // IMPORTANT: Do not alter the order of the headers values
   public enum Headers {
     EMPLOYMENT_STATUS, HOME_ID, DEPARTMENT_NAME, PROVINCE_NAME
   }
