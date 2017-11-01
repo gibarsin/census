@@ -10,12 +10,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public abstract class AbstractQuery implements IQuery {
   private final static Logger LOGGER = LoggerFactory.getLogger(AbstractQuery.class);
   private final HazelcastInstance hazelcastInstance;
 
-  public AbstractQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
+  protected AbstractQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
     this.hazelcastInstance = hazelcastInstance;
     // TODO: pass the client args so each query can grab the desired parameters
     fillData(clientArgs);
@@ -78,8 +79,8 @@ public abstract class AbstractQuery implements IQuery {
   protected abstract void internalRun(JobTracker jobTracker);
 
   public static abstract class Builder {
-    protected HazelcastInstance hazelcastInstance;
-    protected ClientArgs clientArgs;
+    private HazelcastInstance hazelcastInstance;
+    private ClientArgs clientArgs;
 
     public Builder setHazelcastInstance(HazelcastInstance hazelcastInstance) {
       this.hazelcastInstance = hazelcastInstance;
@@ -91,6 +92,15 @@ public abstract class AbstractQuery implements IQuery {
       return this;
     }
 
-    public abstract AbstractQuery build();
+    public AbstractQuery build() {
+      return build(Objects.requireNonNull(hazelcastInstance), Objects.requireNonNull(clientArgs));
+    }
+
+    /**
+     * Create a new instance of an AbstractQuery type with the validated arguments
+     * @param hazelcastInstance The non-null hazelcast instance
+     * @param clientArgs The non-null and validated client args
+     */
+    protected abstract AbstractQuery build(HazelcastInstance hazelcastInstance, ClientArgs clientArgs);
   }
 }

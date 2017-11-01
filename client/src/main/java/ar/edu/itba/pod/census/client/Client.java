@@ -47,25 +47,18 @@ public final class Client {
     switch (query) {
       case REGION_POPULATION:
         return new RegionPopulationQuery.Builder();
-      break;
       case DEPARTMENT_POPULATION:
         return new DepartmentPopulationQuery.Builder();
-      break;
       case REGION_OCCUPATION:
         return new RegionOccupationQuery.Builder();
-      break;
       case HOMES_IN_REGION:
         return new HomesInRegionQuery.Builder();
-      break;
       case CITIZENS_PER_HOME_IN_REGION:
         return new CitizensPerHomeInRegionQuery.Builder();
-      break;
       case DEPARTMENT_COUNT:
         return new DepartmentCountQuery.Builder();
-      break;
       case SHARED_DEPARTMENT_COUNT:
         return new SharedDepartmentCountQuery.Builder();
-      break;
       default:
         throw new IllegalStateException("No valid query selected");
     }

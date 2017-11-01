@@ -2,6 +2,7 @@ package ar.edu.itba.pod.census.client.query;
 
 import ar.edu.itba.pod.census.client.CensusCSVRecords;
 import ar.edu.itba.pod.census.client.CensusCSVRecords.Headers;
+import ar.edu.itba.pod.census.client.args.ClientArgs;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
 import ar.edu.itba.pod.census.mapper.RegionOccupationMapper;
 import ar.edu.itba.pod.census.model.Citizen;
@@ -20,13 +21,13 @@ import java.math.BigDecimal;
 import java.util.Map;
 import org.apache.commons.csv.CSVRecord;
 
-public final class RegionOccupationQuery {
-
-  private RegionOccupationQuery() {
+public final class RegionOccupationQuery extends AbstractQuery {
+  private RegionOccupationQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
+    super(hazelcastInstance, clientArgs);
   }
 
   public static void fillData(final HazelcastInstance hazelcastInstance,
-      final CensusCSVRecords records) {
+                              final CensusCSVRecords records) {
     final Map<Long, Citizen> map = hazelcastInstance.getMap(SharedConfiguration.STRUCTURE_NAME);
 
     long id = 0;
@@ -57,5 +58,27 @@ public final class RegionOccupationQuery {
         .mapper(mapper)
         .reducer(reducerFactory)
         .submit();
+  }
+
+  @Override
+  protected void getAClearClusterCollection(HazelcastInstance hazelcastInstance) {
+    // TODO
+  }
+
+  @Override
+  protected void addRecordToClusterCollection(CSVRecord csvRecord) {
+    // TODO
+  }
+
+  @Override
+  protected void internalRun(JobTracker jobTracker) {
+    // TODO
+  }
+
+  public static class Builder extends AbstractQuery.Builder {
+    @Override
+    protected AbstractQuery build(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
+      return new RegionOccupationQuery(hazelcastInstance, clientArgs);
+    }
   }
 }

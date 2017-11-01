@@ -2,6 +2,7 @@ package ar.edu.itba.pod.census.client.query;
 
 import ar.edu.itba.pod.census.client.CensusCSVRecords;
 import ar.edu.itba.pod.census.client.CensusCSVRecords.Headers;
+import ar.edu.itba.pod.census.client.args.ClientArgs;
 import ar.edu.itba.pod.census.collator.MinIntegerValueSortCollator;
 import ar.edu.itba.pod.census.combiner.DepartmentCountCombinerFactory;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
@@ -24,9 +25,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import org.apache.commons.csv.CSVRecord;
 
-public final class DepartmentCountQuery {
-
-  private DepartmentCountQuery() {
+public final class DepartmentCountQuery extends AbstractQuery {
+  private DepartmentCountQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
+    super(hazelcastInstance, clientArgs);
   }
 
   public static void fillData(final HazelcastInstance hazelcastInstance,
@@ -61,5 +62,27 @@ public final class DepartmentCountQuery {
         .combiner(combinerFactory)
         .reducer(reducerFactory)
         .submit(collator);
+  }
+
+  @Override
+  protected void getAClearClusterCollection(HazelcastInstance hazelcastInstance) {
+    // TODO
+  }
+
+  @Override
+  protected void addRecordToClusterCollection(CSVRecord csvRecord) {
+    // TODO
+  }
+
+  @Override
+  protected void internalRun(JobTracker jobTracker) {
+    // TODO
+  }
+
+  public static class Builder extends AbstractQuery.Builder {
+    @Override
+    protected AbstractQuery build(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
+      return new DepartmentCountQuery(hazelcastInstance, clientArgs);
+    }
   }
 }

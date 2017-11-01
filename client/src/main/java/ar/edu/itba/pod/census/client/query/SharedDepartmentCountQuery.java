@@ -2,6 +2,7 @@ package ar.edu.itba.pod.census.client.query;
 
 import ar.edu.itba.pod.census.client.CensusCSVRecords;
 import ar.edu.itba.pod.census.client.CensusCSVRecords.Headers;
+import ar.edu.itba.pod.census.client.args.ClientArgs;
 import ar.edu.itba.pod.census.collator.MinIntegerValueSortCollator;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
 import ar.edu.itba.pod.census.mapper.SharedDepartmentCountMapper;
@@ -21,13 +22,13 @@ import java.util.List;
 import java.util.Map.Entry;
 import org.apache.commons.csv.CSVRecord;
 
-public final class SharedDepartmentCountQuery {
-
-  private SharedDepartmentCountQuery() {
+public final class SharedDepartmentCountQuery extends AbstractQuery {
+  private SharedDepartmentCountQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
+    super(hazelcastInstance, clientArgs);
   }
 
   public static void fillData(final HazelcastInstance hazelcastInstance,
-      final CensusCSVRecords records) {
+                              final CensusCSVRecords records) {
     final MultiMap<String, Province> map =
         hazelcastInstance.getMultiMap(SharedConfiguration.STRUCTURE_NAME);
 
@@ -57,5 +58,27 @@ public final class SharedDepartmentCountQuery {
         .mapper(mapper)
         .reducer(reducerFactory)
         .submit(collator);
+  }
+
+  @Override
+  protected void getAClearClusterCollection(HazelcastInstance hazelcastInstance) {
+    // TODO
+  }
+
+  @Override
+  protected void addRecordToClusterCollection(CSVRecord csvRecord) {
+    // TODO
+  }
+
+  @Override
+  protected void internalRun(JobTracker jobTracker) {
+    // TODO
+  }
+
+  public static class Builder extends AbstractQuery.Builder {
+    @Override
+    protected AbstractQuery build(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
+      return new SharedDepartmentCountQuery(hazelcastInstance, clientArgs);
+    }
   }
 }
