@@ -12,9 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class CensusCSVRecords implements Iterator<CSVRecord>, Closeable, AutoCloseable {
-
-  private final static Logger LOGGER = LoggerFactory.getLogger(CensusCSVRecords.class);
-
   private final Reader inFile;
   private final CSVParser parser;
   private final Iterator<CSVRecord> recordsIterator;

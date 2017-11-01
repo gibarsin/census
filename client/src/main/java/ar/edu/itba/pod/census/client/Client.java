@@ -49,10 +49,6 @@ public final class Client {
 
     hazelcastClient.shutdown();
 
-    final CensusCSVRecords csvRecords = loadInputFile();
-    fillData(hazelcastClient, csvRecords);
-    close(csvRecords);
-
     handleQuery(hazelcastClient);
 
     hazelcastClient.shutdown();
@@ -106,19 +102,6 @@ public final class Client {
             .setPassword(SharedConfiguration.GROUP_PASSWORD);
 
     return HazelcastClient.newHazelcastClient(clientConfig);
-  }
-
-  private static CensusCSVRecords loadInputFile() {
-    CensusCSVRecords csvRecords = null;
-    try {
-      csvRecords = CensusCSVRecords.open(CLIENT_ARGS.getInPath());
-    } catch (final IOException exception) {
-      System.err.println("There was an error while trying to open/read the input file");
-      LOGGER.error("Could not open/read input file", exception);
-      System.exit(1);
-    }
-
-    return csvRecords;
   }
 
   private static void fillData(final HazelcastInstance hazelcastClient,
@@ -300,14 +283,6 @@ public final class Client {
       }
     } catch (final InterruptedException | ExecutionException exception) {
       LOGGER.error("Job failed", exception);
-    }
-  }
-
-  private static void close(final Closeable closeable) {
-    try {
-      closeable.close();
-    } catch (final IOException exception) {
-      LOGGER.error("There was an error while closing the file", exception);
     }
   }
 }
