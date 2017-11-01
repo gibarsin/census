@@ -69,10 +69,7 @@ public final class RegionPopulationQuery extends AbstractQuery {
 
   @Override
   protected void processJobResult(final PrintStream output) {
-    // TODO: Improve
-    for (final Entry<String, Integer> entry : jobResult) {
-      output.println(entry.getKey() + " -> " + entry.getValue());
-    }
+    jobResult.forEach(entry -> output.println(entry.getKey() + " -> " + entry.getValue()));
   }
 
   public static class Builder extends AbstractQuery.Builder {
