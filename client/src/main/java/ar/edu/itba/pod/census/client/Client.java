@@ -1,6 +1,9 @@
 package ar.edu.itba.pod.census.client;
 
 import ar.edu.itba.pod.census.client.args.ClientArgs;
+import ar.edu.itba.pod.census.client.exception.ArgumentsErrorException;
+import ar.edu.itba.pod.census.client.exception.InputFileErrorException;
+import ar.edu.itba.pod.census.client.exception.QueryFailedException;
 import ar.edu.itba.pod.census.client.query.*;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
 import ar.edu.itba.pod.census.model.Region;
@@ -29,16 +32,47 @@ public final class Client {
     DEPARTMENT_COUNT, SHARED_DEPARTMENT_COUNT
   }
 
-  public static void main(final String[] args) {
-    final HazelcastInstance hazelcastInstance = createHazelcastClient();
-    parseClientArguments(args);
+  private enum ExitStatus {
+    OK(0), ARGS_ERROR(1), INPUT_FILE_ERROR(2), QUERY_FAILED(3);
 
-    final IQuery query = buildQuery(hazelcastInstance, CLIENT_ARGS);
-    query.run();
-    hazelcastInstance.shutdown();
+    private final int status;
+    ExitStatus(final int status) {
+     this.status = status;
+    }
+
+    public int getStatus() {
+      return status;
+    }
   }
 
-  private static IQuery buildQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
+  public static void main(final String[] args) {
+    ExitStatus exitStatus = ExitStatus.OK;
+    // TODO: check if exceptions here can be handled if no hazelcast client can be grabbed/consider other hazelcast errors too
+    final HazelcastInstance hazelcastInstance = createHazelcastClient();
+
+    try {
+      parseClientArguments(args);
+      final IQuery query = buildQuery(hazelcastInstance, CLIENT_ARGS);
+      query.run();
+    } catch (final ArgumentsErrorException e) {
+      System.err.println(e.getMessage());
+      exitStatus = ExitStatus.ARGS_ERROR;
+    } catch (final InputFileErrorException e) {
+      System.err.println(e.getMessage());
+      exitStatus = ExitStatus.INPUT_FILE_ERROR;
+    } catch (final QueryFailedException e) {
+      System.err.println(e.getMessage());
+      exitStatus = ExitStatus.QUERY_FAILED;
+    }
+
+    hazelcastInstance.shutdown();
+
+    // As we are writing a command line tool, we need this :)
+    System.exit(exitStatus.getStatus());
+  }
+
+  private static IQuery buildQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs)
+          throws ArgumentsErrorException, InputFileErrorException {
     // Queries index is offset by 1 to the left (i.e., query 1 is index 0, query 2 index 1 and so on...)
     final AbstractQuery.Builder builder = getBuilderForQuery(Query.values()[clientArgs.getQuery() - 1]);
     return builder.setHazelcastInstance(hazelcastInstance).setClientArgs(clientArgs).build();
@@ -103,7 +137,7 @@ public final class Client {
     }
   }
 
-  private static void handleQuery2(final HazelcastInstance hazelcastClient) {
+  private static void handleQuery2(final HazelcastInstance hazelcastClient) throws ArgumentsErrorException {
     LOGGER.debug("Submitting job...");
     final ICompletableFuture<List<Entry<String, Integer>>> futureResponse = DepartmentPopulationQuery
             .start(hazelcastClient, CLIENT_ARGS.getProvince(), CLIENT_ARGS.getN());
@@ -155,7 +189,7 @@ public final class Client {
     }
   }
 
-  private static void handleQuery6(final HazelcastInstance hazelcastClient) {
+  private static void handleQuery6(final HazelcastInstance hazelcastClient) throws ArgumentsErrorException {
     LOGGER.debug("Submitting job...");
     final ICompletableFuture<List<Entry<String, Integer>>> futureResponse =
             DepartmentCountQuery.start(hazelcastClient, CLIENT_ARGS.getN());
@@ -173,7 +207,7 @@ public final class Client {
     }
   }
 
-  private static void handleQuery7(final HazelcastInstance hazelcastClient) {
+  private static void handleQuery7(final HazelcastInstance hazelcastClient) throws ArgumentsErrorException {
     LOGGER.debug("Submitting job...");
     final ICompletableFuture<List<Entry<String, Integer>>> futureResponse =
             SharedDepartmentCountQuery.start(hazelcastClient, CLIENT_ARGS.getN());

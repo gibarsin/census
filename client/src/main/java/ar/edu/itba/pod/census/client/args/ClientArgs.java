@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.census.client.args;
 
+import ar.edu.itba.pod.census.client.exception.ArgumentsErrorException;
 import com.beust.jcommander.IDefaultProvider;
 import com.beust.jcommander.Parameter;
 import java.util.ArrayList;
@@ -67,17 +68,17 @@ public final class ClientArgs {
     return timeOutPath;
   }
 
-  public Integer getN() {
+  public Integer getN() throws ArgumentsErrorException {
     if (!QUERIES_N.contains(query)) {
-      throw new IllegalStateException("N is undefined for this query");
+      throw new ArgumentsErrorException("N is undefined for this query");
     }
 
     return Objects.requireNonNull(n);
   }
 
-  public String getProvince() {
+  public String getProvince() throws ArgumentsErrorException {
     if (!QUERIES_PROVINCE.contains(query)) {
-      throw new IllegalStateException("Province is undefined for this query");
+      throw new ArgumentsErrorException("Province is undefined for this query");
     }
 
     return Objects.requireNonNull(province);

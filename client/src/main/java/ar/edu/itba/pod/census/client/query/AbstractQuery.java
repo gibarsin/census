@@ -2,6 +2,8 @@ package ar.edu.itba.pod.census.client.query;
 
 import ar.edu.itba.pod.census.client.CensusCSVRecords;
 import ar.edu.itba.pod.census.client.args.ClientArgs;
+import ar.edu.itba.pod.census.client.exception.InputFileErrorException;
+import ar.edu.itba.pod.census.client.exception.QueryFailedException;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.mapreduce.JobTracker;
@@ -21,13 +23,13 @@ public abstract class AbstractQuery implements IQuery {
 
   @SuppressWarnings("WeakerAccess")
   // Intentionally left protected instead of package-private because of possible inheritance in other packages
-  protected AbstractQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
+  protected AbstractQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) throws InputFileErrorException {
     this.hazelcastInstance = hazelcastInstance;
     // TODO: pass the client args so each query can grab the desired parameters
     fillData(clientArgs);
   }
 
-  private void fillData(final ClientArgs clientArgs) {
+  private void fillData(final ClientArgs clientArgs) throws InputFileErrorException {
     getAClearClusterCollection(hazelcastInstance);
     // IMPORTANT: Prior to the log so as not to affect the logging time (which is the one considered by professors)
     final long start = System.currentTimeMillis();
@@ -36,9 +38,8 @@ public abstract class AbstractQuery implements IQuery {
     try (CensusCSVRecords csvRecords = CensusCSVRecords.open(clientArgs.getInPath())) {
       populateClusterCollection(csvRecords);
     } catch (final IOException exception) {
-      System.err.println("There was an error while trying to open/read the input file.");
       LOGGER.error("Could not open/read input file", exception);
-      System.exit(1);
+      throw new InputFileErrorException("There was an error while trying to open/read the input file");
     }
     LOGGER.info("Fin de lectura del archivo");
     // IMPORTANT: Following the log so as not to affect the logging time (which is the one considered by professors)
