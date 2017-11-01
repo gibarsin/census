@@ -80,6 +80,24 @@ public abstract class AbstractQuery implements IQuery {
   }
 
   /**
+   * Get the needed cluster collection from the given {@code hazelcastInstance}.
+   * <p>
+   * <b>Note that the <i>clear</i> section of this name means that it must be ensure that the collection has no previous
+   * items, so implementations have to take care of this clean up.</b>
+   *
+   * @param hazelcastInstance The hazelcast instance from where to require the needed cluster collection
+   */
+  protected abstract void getAClearClusterCollection(final HazelcastInstance hazelcastInstance);
+
+  /**
+   * Fill the cluster collection already initialized by the {@code getAClearClusterCollection} with the given
+   * {@code csvRecord} as needed.
+   *
+   * @param csvRecord The csv record to be added to the cluster collection
+   */
+  protected abstract void addRecordToClusterCollection(CSVRecord csvRecord);
+
+  /**
    * Internally initialize all the needed stuff to perform the job submission.
    * <p>
    * This method is not considered in the performance measure.
@@ -109,24 +127,6 @@ public abstract class AbstractQuery implements IQuery {
    * This is the step 1/3 of the run process.
    */
   protected abstract void processJobResult();
-
-  /**
-   * Get the needed cluster collection from the given {@code hazelcastInstance}.
-   * <p>
-   * <b>Note that the <i>clear</i> section of this name means that it must be ensure that the collection has no previous
-   * items, so implementations have to take care of this clean up.</b>
-   *
-   * @param hazelcastInstance The hazelcast instance from where to require the needed cluster collection
-   */
-  protected abstract void getAClearClusterCollection(final HazelcastInstance hazelcastInstance);
-
-  /**
-   * Fill the cluster collection already initialized by the {@code getAClearClusterCollection} with the given
-   * {@code csvRecord} as needed.
-   *
-   * @param csvRecord The csv record to be added to the cluster collection
-   */
-  protected abstract void addRecordToClusterCollection(CSVRecord csvRecord);
 
   public static abstract class Builder {
     private HazelcastInstance hazelcastInstance;

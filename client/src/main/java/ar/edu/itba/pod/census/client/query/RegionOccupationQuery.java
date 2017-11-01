@@ -19,6 +19,8 @@ import com.hazelcast.mapreduce.Mapper;
 import com.hazelcast.mapreduce.ReducerFactory;
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
 import org.apache.commons.csv.CSVRecord;
 
 public final class RegionOccupationQuery extends AbstractQuery {
@@ -61,17 +63,27 @@ public final class RegionOccupationQuery extends AbstractQuery {
   }
 
   @Override
-  protected void getAClearClusterCollection(HazelcastInstance hazelcastInstance) {
+  protected void getAClearClusterCollection(final HazelcastInstance hazelcastInstance) {
     // TODO
   }
 
   @Override
-  protected void addRecordToClusterCollection(CSVRecord csvRecord) {
+  protected void addRecordToClusterCollection(final CSVRecord csvRecord) {
     // TODO
   }
 
   @Override
-  protected void internalRun(JobTracker jobTracker) {
+  protected void buildMapReduceJob(final JobTracker jobTracker) {
+    // TODO
+  }
+
+  @Override
+  protected void submitJob() throws ExecutionException, InterruptedException {
+    // TODO
+  }
+
+  @Override
+  protected void processJobResult() {
     // TODO
   }
 

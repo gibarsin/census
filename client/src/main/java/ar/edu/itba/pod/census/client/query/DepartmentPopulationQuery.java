@@ -24,6 +24,7 @@ import org.apache.commons.csv.CSVRecord;
 
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
 
 public final class DepartmentPopulationQuery extends AbstractQuery {
   private DepartmentPopulationQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
@@ -59,17 +60,27 @@ public final class DepartmentPopulationQuery extends AbstractQuery {
   }
 
   @Override
-  protected void getAClearClusterCollection(HazelcastInstance hazelcastInstance) {
+  protected void getAClearClusterCollection(final HazelcastInstance hazelcastInstance) {
     // TODO
   }
 
   @Override
-  protected void addRecordToClusterCollection(CSVRecord csvRecord) {
+  protected void addRecordToClusterCollection(final CSVRecord csvRecord) {
     // TODO
   }
 
   @Override
-  protected void internalRun(JobTracker jobTracker) {
+  protected void buildMapReduceJob(final JobTracker jobTracker) {
+    // TODO
+  }
+
+  @Override
+  protected void submitJob() throws ExecutionException, InterruptedException {
+    // TODO
+  }
+
+  @Override
+  protected void processJobResult() {
     // TODO
   }
 

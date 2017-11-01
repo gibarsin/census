@@ -22,11 +22,38 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
+
 import org.apache.commons.csv.CSVRecord;
 
 public final class CitizensPerHomeInRegionQuery extends AbstractQuery {
   private CitizensPerHomeInRegionQuery(HazelcastInstance hazelcastInstance, ClientArgs clientArgs) {
     super(hazelcastInstance, clientArgs);
+  }
+
+  @Override
+  protected void getAClearClusterCollection(final HazelcastInstance hazelcastInstance) {
+    // TODO
+  }
+
+  @Override
+  protected void addRecordToClusterCollection(final CSVRecord csvRecord) {
+    // TODO
+  }
+
+  @Override
+  protected void buildMapReduceJob(final JobTracker jobTracker) {
+    // TODO
+  }
+
+  @Override
+  protected void submitJob() throws ExecutionException, InterruptedException {
+    // TODO
+  }
+
+  @Override
+  protected void processJobResult() {
+    // TODO
   }
 
   public static void fillData(final HazelcastInstance hazelcastInstance,
@@ -62,21 +89,6 @@ public final class CitizensPerHomeInRegionQuery extends AbstractQuery {
         .mapper(mapper)
         .reducer(reducerFactory)
         .submit(collator);
-  }
-
-  @Override
-  protected void getAClearClusterCollection(HazelcastInstance hazelcastInstance) {
-    // TODO
-  }
-
-  @Override
-  protected void addRecordToClusterCollection(CSVRecord csvRecord) {
-    // TODO
-  }
-
-  @Override
-  protected void internalRun(JobTracker jobTracker) {
-    // TODO
   }
 
   public static class Builder extends AbstractQuery.Builder {
