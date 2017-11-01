@@ -11,11 +11,16 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 
+@SuppressWarnings("deprecation")
+// Intentionally as we are using deprecated Hazelcast features
 public abstract class AbstractQuery implements IQuery {
   private final static Logger LOGGER = LoggerFactory.getLogger(AbstractQuery.class);
   private final HazelcastInstance hazelcastInstance;
 
+  @SuppressWarnings("WeakerAccess")
+  // Intentionally left protected instead of package-private because of possible inheritance in other packages
   protected AbstractQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
     this.hazelcastInstance = hazelcastInstance;
     // TODO: pass the client args so each query can grab the desired parameters
@@ -48,10 +53,59 @@ public abstract class AbstractQuery implements IQuery {
   }
 
   @Override
-  public void run() {
+  public void run() throws QueryFailedException {
     final JobTracker jobTracker = hazelcastInstance.getJobTracker(SharedConfiguration.TRACKER_NAME);
-    internalRun(jobTracker);
+    // Prepare the Map Reduce Job
+    buildMapReduceJob(jobTracker);
+    // IMPORTANT: Prior to the log so as not to affect the logging time (which is the one considered by professors)
+    final long start = System.currentTimeMillis();
+    try {
+      // Log starting
+      LOGGER.info("Inicio del trabajo map/reduce");
+      submitJob();
+    } catch (ExecutionException | InterruptedException e) {
+      LOGGER.error("Job failed. Reason: ", e);
+      throw new QueryFailedException("Job failed");
+    } finally {
+      // Log end
+      LOGGER.info("Fin del trabajo map/reduce");
+      // IMPORTANT: Following the log so as not to affect the logging time (which is the one considered by professors)
+      final long end = System.currentTimeMillis();
+      LOGGER.debug("Tiempo de lectura entre ambos logs (aproximadamente): {0} ms.", end - start);
+    }
+    processJobResult();
   }
+
+  /**
+   * Internally initialize all the needed stuff to perform the job submission.
+   * <p>
+   * This method is not considered in the performance measure.
+   * <p>
+   * This is the step 1/3 of the run process.
+   *
+   * @param jobTracker The job tracker to be used to create the job to be submitted later
+   */
+  protected abstract void buildMapReduceJob(final JobTracker jobTracker);
+
+  /**
+   * Submit the already prepared job and internally store its result to lately process it.
+   * <p>
+   * This method is the only one considered in the performance measure.
+   * <p>
+   * This is the step 2/3 of the run process.
+   * @throws ExecutionException if the job computation threw an exception
+   * @throws InterruptedException if the job's thread was interrupted while waiting its response
+   */
+  protected abstract void submitJob() throws ExecutionException, InterruptedException;
+
+  /**
+   * Internally initialize all the needed stuff to perform the job submission.
+   * <p>
+   * This method is not considered in the performance measure.
+   * <p>
+   * This is the step 1/3 of the run process.
+   */
+  protected abstract void processJobResult();
 
   /**
    * Get the needed cluster collection from the given {@code hazelcastInstance}.
@@ -70,13 +124,6 @@ public abstract class AbstractQuery implements IQuery {
    * @param csvRecord The csv record to be added to the cluster collection
    */
   protected abstract void addRecordToClusterCollection(CSVRecord csvRecord);
-
-  /**
-   * Create & submit the job query represented by the current class using the given {@code jobTracker}.
-   *
-   * @param jobTracker The job tracker used to create the job to be submitted
-   */
-  protected abstract void internalRun(JobTracker jobTracker);
 
   public static abstract class Builder {
     private HazelcastInstance hazelcastInstance;

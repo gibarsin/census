@@ -32,6 +32,7 @@ public final class Client {
   public static void main(final String[] args) {
     final HazelcastInstance hazelcastInstance = createHazelcastClient();
     parseClientArguments(args);
+
     final IQuery query = buildQuery(hazelcastInstance, CLIENT_ARGS);
     query.run();
     hazelcastInstance.shutdown();
@@ -84,64 +85,6 @@ public final class Client {
     return HazelcastClient.newHazelcastClient(clientConfig);
   }
 
-  private static void fillData(final HazelcastInstance hazelcastClient,
-                               final CensusCSVRecords records) {
-    switch (CLIENT_ARGS.getQuery()) {
-      case 1:
-        RegionPopulationQuery.fillData(hazelcastClient, records);
-        break;
-
-      case 2:
-        DepartmentPopulationQuery.fillData(hazelcastClient, records);
-        break;
-
-      case 3:
-        RegionOccupationQuery.fillData(hazelcastClient, records);
-        break;
-      case 4:
-        HomesInRegionQuery.fillData(hazelcastClient, records);
-        break;
-      case 5:
-        CitizensPerHomeInRegionQuery.fillData(hazelcastClient, records);
-        break;
-      case 6:
-        DepartmentCountQuery.fillData(hazelcastClient, records);
-        break;
-      case 7:
-        SharedDepartmentCountQuery.fillData(hazelcastClient, records);
-        break;
-    }
-  }
-
-  private static void handleQuery(final HazelcastInstance hazelcastClient) {
-    switch (CLIENT_ARGS.getQuery()) {
-      case 1:
-        handleQuery1(hazelcastClient);
-        break;
-
-      case 2:
-        handleQuery2(hazelcastClient);
-        break;
-
-      case 3:
-        handleQuery3(hazelcastClient);
-        break;
-
-      case 4:
-        handleQuery4(hazelcastClient);
-        break;
-      case 5:
-        handleQuery5(hazelcastClient);
-        break;
-      case 6:
-        handleQuery6(hazelcastClient);
-        break;
-      case 7:
-        handleQuery7(hazelcastClient);
-        break;
-    }
-  }
-
   private static void handleQuery5(final HazelcastInstance hazelcastClient) {
     LOGGER.debug("Submitting job...");
     final ICompletableFuture<List<Entry<Region, BigDecimal>>> futureResponse =
@@ -153,24 +96,6 @@ public final class Client {
       LOGGER.info("Job successful");
 
       for (final Entry<Region, BigDecimal> entry : response) {
-        System.out.println(entry.getKey() + " -> " + entry.getValue());
-      }
-    } catch (final InterruptedException | ExecutionException exception) {
-      LOGGER.error("Job failed", exception);
-    }
-  }
-
-  private static void handleQuery1(final HazelcastInstance hazelcastClient) {
-    LOGGER.debug("Submitting job...");
-    final ICompletableFuture<List<Entry<String, Integer>>> futureResponse =
-            RegionPopulationQuery.start(hazelcastClient);
-    LOGGER.info("Job submitted");
-
-    try {
-      final List<Entry<String, Integer>> response = futureResponse.get();
-      LOGGER.info("Job successful");
-
-      for (final Entry<String, Integer> entry : response) {
         System.out.println(entry.getKey() + " -> " + entry.getValue());
       }
     } catch (final InterruptedException | ExecutionException exception) {

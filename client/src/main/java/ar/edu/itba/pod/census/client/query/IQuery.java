@@ -4,5 +4,5 @@ public interface IQuery {
     /**
      * Run the query represented by the class that implements this interface
      */
-    void run();
+    void run() throws QueryFailedException;
 }
