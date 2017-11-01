@@ -57,7 +57,9 @@ public final class RegionPopulationQuery extends AbstractQuery {
             .reducer(new RegionPopulationReducerFactory());
 
     // Prepare the collator to post-process the job's result
-    collator = new SortCollator<>(Collections.reverseOrder(Entry.comparingByValue()));
+    // Compiler complains if we do not set this explicitly
+    //noinspection Convert2Diamond
+    collator = new SortCollator<String, Integer>(Collections.reverseOrder(Entry.comparingByValue()));
   }
 
   @Override

@@ -50,7 +50,7 @@ public abstract class AbstractQuery implements IQuery {
       LOGGER.info("Fin del trabajo map/reduce");
       // IMPORTANT: Following the log so as not to affect the logging time (which is the one considered by professors)
       final long end = System.currentTimeMillis();
-      LOGGER.debug("Tiempo de trabajo entre ambos logs (aproximadamente): {0} ms.", end - start);
+      LOGGER.debug("Tiempo de trabajo entre ambos logs (aproximadamente): {} ms.", end - start);
     }
     processJobResult();
   }
@@ -70,7 +70,7 @@ public abstract class AbstractQuery implements IQuery {
     LOGGER.info("Fin de lectura del archivo");
     // IMPORTANT: Following the log so as not to affect the logging time (which is the one considered by professors)
     final long end = System.currentTimeMillis();
-    LOGGER.debug("Tiempo de lectura entre ambos logs (aproximadamente): {0} ms.", end - start);
+    LOGGER.debug("Tiempo de lectura entre ambos logs (aproximadamente): {} ms.", end - start);
   }
 
   private void populateClusterCollection(CensusCSVRecords csvRecords) {
