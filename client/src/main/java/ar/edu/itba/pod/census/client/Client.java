@@ -1,14 +1,7 @@
 package ar.edu.itba.pod.census.client;
 
 import ar.edu.itba.pod.census.client.args.ClientArgs;
-import ar.edu.itba.pod.census.client.query.CitizensPerHomeInRegionQuery;
-import ar.edu.itba.pod.census.client.query.DepartmentCountQuery;
-import ar.edu.itba.pod.census.client.query.DepartmentPopulationQuery;
-import ar.edu.itba.pod.census.client.query.HomesInRegionQuery;
-import ar.edu.itba.pod.census.client.query.IQuery;
-import ar.edu.itba.pod.census.client.query.RegionOccupationQuery;
-import ar.edu.itba.pod.census.client.query.RegionPopulationQuery;
-import ar.edu.itba.pod.census.client.query.SharedDepartmentCountQuery;
+import ar.edu.itba.pod.census.client.query.*;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
 import ar.edu.itba.pod.census.model.Region;
 import com.beust.jcommander.JCommander;
@@ -16,20 +9,17 @@ import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ICompletableFuture;
-import java.io.Closeable;
-import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public final class Client {
-
   private static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
-
   private static final ClientArgs CLIENT_ARGS = ClientArgs.getInstance();
 
   // IMPORTANT: Ordinals are in use. Update this with caution
@@ -40,47 +30,44 @@ public final class Client {
   }
 
   public static void main(final String[] args) {
+    final HazelcastInstance hazelcastInstance = createHazelcastClient();
     parseClientArguments(args);
-
-    final HazelcastInstance hazelcastClient = createHazelcastClient();
-
-    final IQuery query = buildQuery(CLIENT_ARGS, hazelcastClient);
+    final IQuery query = buildQuery(hazelcastInstance, CLIENT_ARGS);
     query.run();
-
-    hazelcastClient.shutdown();
-
-    handleQuery(hazelcastClient);
-
-    hazelcastClient.shutdown();
+    hazelcastInstance.shutdown();
   }
 
-  // TODO: Implement later with builders
-  private static IQuery buildQuery(ClientArgs clientArgs, HazelcastInstance hazelcastClient) {
+  private static IQuery buildQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
     // Queries index is offset by 1 to the left (i.e., query 1 is index 0, query 2 index 1 and so on...)
-    switch (Query.values()[clientArgs.getQuery() - 1]) {
+    final AbstractQuery.Builder builder = getBuilderForQuery(Query.values()[clientArgs.getQuery() - 1]);
+    return builder.setHazelcastInstance(hazelcastInstance).setClientArgs(clientArgs).build();
+  }
+
+  private static AbstractQuery.Builder getBuilderForQuery(final Query query) {
+    switch (query) {
       case REGION_POPULATION:
-        return new RegionPopulationQuery();
+        return new RegionPopulationQuery.Builder();
       break;
       case DEPARTMENT_POPULATION:
-        return new DepartmentPopulationQuery();
+        return new DepartmentPopulationQuery.Builder();
       break;
       case REGION_OCCUPATION:
-        return new RegionOccupationQuery();
+        return new RegionOccupationQuery.Builder();
       break;
       case HOMES_IN_REGION:
-        return new HomesInRegionQuery();
+        return new HomesInRegionQuery.Builder();
       break;
       case CITIZENS_PER_HOME_IN_REGION:
-        return new CitizensPerHomeInRegionQuery();
-        break;
+        return new CitizensPerHomeInRegionQuery.Builder();
+      break;
       case DEPARTMENT_COUNT:
-        return new DepartmentCountQuery();
+        return new DepartmentCountQuery.Builder();
       break;
       case SHARED_DEPARTMENT_COUNT:
-        return new SharedDepartmentCountQuery();
+        return new SharedDepartmentCountQuery.Builder();
       break;
       default:
-        throw new IllegalStateException("No query selected");
+        throw new IllegalStateException("No valid query selected");
     }
   }
 

@@ -17,6 +17,7 @@ public abstract class AbstractQuery implements IQuery {
 
   public AbstractQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
     this.hazelcastInstance = hazelcastInstance;
+    // TODO: pass the client args so each query can grab the desired parameters
     fillData(clientArgs);
   }
 
@@ -75,4 +76,21 @@ public abstract class AbstractQuery implements IQuery {
    * @param jobTracker The job tracker used to create the job to be submitted
    */
   protected abstract void internalRun(JobTracker jobTracker);
+
+  public static abstract class Builder {
+    protected HazelcastInstance hazelcastInstance;
+    protected ClientArgs clientArgs;
+
+    public Builder setHazelcastInstance(HazelcastInstance hazelcastInstance) {
+      this.hazelcastInstance = hazelcastInstance;
+      return this;
+    }
+
+    public Builder setClientArgs(ClientArgs clientArgs) {
+      this.clientArgs = clientArgs;
+      return this;
+    }
+
+    public abstract AbstractQuery build();
+  }
 }
