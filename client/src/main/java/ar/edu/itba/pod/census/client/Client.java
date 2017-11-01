@@ -72,7 +72,7 @@ public final class Client {
   }
 
   private static IQuery buildQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs)
-          throws ArgumentsErrorException, InputFileErrorException {
+          throws ArgumentsErrorException { // TODO: Add arguments validation on build
     // Queries index is offset by 1 to the left (i.e., query 1 is index 0, query 2 index 1 and so on...)
     final AbstractQuery.Builder builder = getBuilderForQuery(Query.values()[clientArgs.getQuery() - 1]);
     return builder.setHazelcastInstance(hazelcastInstance).setClientArgs(clientArgs).build();
