@@ -11,7 +11,6 @@ import ar.edu.itba.pod.census.reducer.RegionPopulationReducerFactory;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IList;
 import com.hazelcast.mapreduce.*;
-import org.apache.commons.csv.CSVRecord;
 
 import java.util.Collections;
 import java.util.List;
@@ -37,12 +36,12 @@ public final class RegionPopulationQuery extends AbstractQuery {
   }
 
   @Override
-  protected void addRecordToClusterCollection(final CSVRecord csvRecord) {
+  protected void addRecordToClusterCollection(final String[] csvRecord) {
     input.add(new Citizen(
-            Integer.parseInt(csvRecord.get(Headers.EMPLOYMENT_STATUS).trim()),
-            Integer.parseInt(csvRecord.get(Headers.HOME_ID).trim()),
-            csvRecord.get(Headers.DEPARTMENT_NAME),
-            csvRecord.get(Headers.PROVINCE_NAME)));
+            Integer.parseInt(csvRecord[Headers.EMPLOYMENT_STATUS.getColumn()].trim()),
+            Integer.parseInt(csvRecord[Headers.HOME_ID.getColumn()].trim()),
+            csvRecord[Headers.DEPARTMENT_NAME.getColumn()],
+            csvRecord[Headers.PROVINCE_NAME.getColumn()]));
   }
 
   @Override

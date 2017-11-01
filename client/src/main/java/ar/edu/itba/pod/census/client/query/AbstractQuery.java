@@ -1,16 +1,16 @@
 package ar.edu.itba.pod.census.client.query;
 
-import ar.edu.itba.pod.census.client.CensusCSVRecords;
 import ar.edu.itba.pod.census.client.args.ClientArgs;
 import ar.edu.itba.pod.census.client.exception.InputFileErrorException;
 import ar.edu.itba.pod.census.client.exception.QueryFailedException;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.mapreduce.JobTracker;
-import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
@@ -18,7 +18,8 @@ import java.util.concurrent.ExecutionException;
 @SuppressWarnings("deprecation")
 // Intentionally as we are using deprecated Hazelcast features
 public abstract class AbstractQuery implements IQuery {
-  private final static Logger LOGGER = LoggerFactory.getLogger(AbstractQuery.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractQuery.class);
+  private static final String CSV_SPLITTER = ",";
   private final HazelcastInstance hazelcastInstance;
   private final String inPath;
 
@@ -61,8 +62,11 @@ public abstract class AbstractQuery implements IQuery {
     final long start = System.currentTimeMillis();
     // Load time includes both the file load and the cluster collection load
     LOGGER.info("Inicio de la lectura del archivo");
-    try (CensusCSVRecords csvRecords = CensusCSVRecords.open(inPath)) {
-      populateClusterCollection(csvRecords);
+    try (BufferedReader br = new BufferedReader(new FileReader(inPath))) {
+      String line;
+      while ((line = br.readLine()) != null) {
+        addRecordToClusterCollection(line.split(CSV_SPLITTER));
+      }
     } catch (final IOException exception) {
       LOGGER.error("Could not open/read input file", exception);
       throw new InputFileErrorException("There was an error while trying to open/read the input file");
@@ -71,12 +75,6 @@ public abstract class AbstractQuery implements IQuery {
     // IMPORTANT: Following the log so as not to affect the logging time (which is the one considered by professors)
     final long end = System.currentTimeMillis();
     LOGGER.debug("Tiempo de lectura entre ambos logs (aproximadamente): {} ms.", end - start);
-  }
-
-  private void populateClusterCollection(CensusCSVRecords csvRecords) {
-    while (csvRecords.hasNext()) {
-      addRecordToClusterCollection(csvRecords.next());
-    }
   }
 
   /**
@@ -95,7 +93,7 @@ public abstract class AbstractQuery implements IQuery {
    *
    * @param csvRecord The csv record to be added to the cluster collection
    */
-  protected abstract void addRecordToClusterCollection(CSVRecord csvRecord);
+  protected abstract void addRecordToClusterCollection(String[] csvRecord);
 
   /**
    * Internally initialize all the needed stuff to perform the job submission.

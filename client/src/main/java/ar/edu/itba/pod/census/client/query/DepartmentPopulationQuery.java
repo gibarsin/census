@@ -20,7 +20,6 @@ import com.hazelcast.mapreduce.KeyPredicate;
 import com.hazelcast.mapreduce.KeyValueSource;
 import com.hazelcast.mapreduce.Mapper;
 import com.hazelcast.mapreduce.ReducerFactory;
-import org.apache.commons.csv.CSVRecord;
 
 import java.util.List;
 import java.util.Map.Entry;
@@ -65,7 +64,7 @@ public final class DepartmentPopulationQuery extends AbstractQuery {
   }
 
   @Override
-  protected void addRecordToClusterCollection(final CSVRecord csvRecord) {
+  protected void addRecordToClusterCollection(final String[] csvRecord) {
     // TODO
   }
 

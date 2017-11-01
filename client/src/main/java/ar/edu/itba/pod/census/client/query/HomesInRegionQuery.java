@@ -72,7 +72,7 @@ public final class HomesInRegionQuery extends AbstractQuery {
   }
 
   @Override
-  protected void addRecordToClusterCollection(final CSVRecord csvRecord) {
+  protected void addRecordToClusterCollection(final String[] csvRecord) {
     // TODO
   }
 
