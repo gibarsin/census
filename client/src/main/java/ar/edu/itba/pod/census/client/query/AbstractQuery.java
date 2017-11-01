@@ -2,6 +2,7 @@ package ar.edu.itba.pod.census.client.query;
 
 import ar.edu.itba.pod.census.client.args.ClientArgs;
 import ar.edu.itba.pod.census.client.exception.InputFileErrorException;
+import ar.edu.itba.pod.census.client.exception.OutputFileErrorException;
 import ar.edu.itba.pod.census.client.exception.QueryFailedException;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
 import com.hazelcast.core.HazelcastInstance;
@@ -9,30 +10,32 @@ import com.hazelcast.mapreduce.JobTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
-@SuppressWarnings("deprecation")
 // Intentionally as we are using deprecated Hazelcast features
+@SuppressWarnings("deprecation")
 public abstract class AbstractQuery implements IQuery {
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractQuery.class);
   private static final String CSV_SPLITTER = ",";
   private final HazelcastInstance hazelcastInstance;
   private final String inPath;
+  private final String outPath;
+  private final String timeOutPath;
 
-  @SuppressWarnings("WeakerAccess")
   // Intentionally left protected instead of package-private because of possible inheritance in other packages
+  @SuppressWarnings("WeakerAccess")
   protected AbstractQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
     this.hazelcastInstance = hazelcastInstance;
-    // TODO: pass the client args so each query can grab the desired parameters
     this.inPath = clientArgs.getInPath();
+    this.outPath = clientArgs.getOutPath();
+    this.timeOutPath = clientArgs.getTimeOutPath();
   }
 
   @Override
-  public void run() throws QueryFailedException, InputFileErrorException {
+  public void run() throws QueryFailedException, InputFileErrorException, OutputFileErrorException {
     fillData(inPath);
     final JobTracker jobTracker = hazelcastInstance.getJobTracker(SharedConfiguration.TRACKER_NAME);
     // Prepare the Map Reduce Job
@@ -53,7 +56,17 @@ public abstract class AbstractQuery implements IQuery {
       final long end = System.currentTimeMillis();
       LOGGER.debug("Tiempo de trabajo entre ambos logs (aproximadamente): {} ms.", end - start);
     }
-    processJobResult();
+    final PrintStream output;
+    try {
+      final File file = new File(outPath);
+      Files.deleteIfExists(file.toPath());
+      output = new PrintStream(new FileOutputStream(outPath, false));
+    } catch (final IOException e) {
+      final String msg = "Could not delete/open/write output file";
+      LOGGER.error(msg, e);
+      throw new OutputFileErrorException(msg);
+    }
+    processJobResult(output);
   }
 
   private void fillData(final String inPath) throws InputFileErrorException {
@@ -123,8 +136,9 @@ public abstract class AbstractQuery implements IQuery {
    * This method is not considered in the performance measure.
    * <p>
    * This is the step 1/3 of the run process.
+   * @param output The output stream were the processed job result should be written
    */
-  protected abstract void processJobResult();
+  protected abstract void processJobResult(final PrintStream output);
 
   public static abstract class Builder {
     private HazelcastInstance hazelcastInstance;

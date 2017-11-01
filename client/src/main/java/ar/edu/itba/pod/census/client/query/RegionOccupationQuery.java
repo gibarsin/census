@@ -17,6 +17,8 @@ import com.hazelcast.mapreduce.KeyPredicate;
 import com.hazelcast.mapreduce.KeyValueSource;
 import com.hazelcast.mapreduce.Mapper;
 import com.hazelcast.mapreduce.ReducerFactory;
+
+import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -83,7 +85,7 @@ public final class RegionOccupationQuery extends AbstractQuery {
   }
 
   @Override
-  protected void processJobResult() {
+  protected void processJobResult(final PrintStream output) {
     // TODO
   }
 

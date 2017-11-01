@@ -12,6 +12,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IList;
 import com.hazelcast.mapreduce.*;
 
+import java.io.PrintStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -67,10 +68,10 @@ public final class RegionPopulationQuery extends AbstractQuery {
   }
 
   @Override
-  protected void processJobResult() {
+  protected void processJobResult(final PrintStream output) {
     // TODO: Improve
     for (final Entry<String, Integer> entry : jobResult) {
-      System.out.println(entry.getKey() + " -> " + entry.getValue());
+      output.println(entry.getKey() + " -> " + entry.getValue());
     }
   }
 

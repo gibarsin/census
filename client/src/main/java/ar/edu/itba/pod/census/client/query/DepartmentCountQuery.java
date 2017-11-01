@@ -19,6 +19,8 @@ import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
 import com.hazelcast.mapreduce.Mapper;
 import com.hazelcast.mapreduce.ReducerFactory;
+
+import java.io.PrintStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -87,7 +89,7 @@ public final class DepartmentCountQuery extends AbstractQuery {
   }
 
   @Override
-  protected void processJobResult() {
+  protected void processJobResult(final PrintStream output) {
     // TODO
   }
 

@@ -18,6 +18,8 @@ import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
 import com.hazelcast.mapreduce.Mapper;
 import com.hazelcast.mapreduce.ReducerFactory;
+
+import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -52,7 +54,7 @@ public final class CitizensPerHomeInRegionQuery extends AbstractQuery {
   }
 
   @Override
-  protected void processJobResult() {
+  protected void processJobResult(final PrintStream output) {
     // TODO
   }
 

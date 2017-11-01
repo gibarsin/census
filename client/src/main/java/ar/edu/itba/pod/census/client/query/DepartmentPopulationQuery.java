@@ -21,6 +21,7 @@ import com.hazelcast.mapreduce.KeyValueSource;
 import com.hazelcast.mapreduce.Mapper;
 import com.hazelcast.mapreduce.ReducerFactory;
 
+import java.io.PrintStream;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
@@ -79,7 +80,7 @@ public final class DepartmentPopulationQuery extends AbstractQuery {
   }
 
   @Override
-  protected void processJobResult() {
+  protected void processJobResult(final PrintStream output) {
     // TODO
   }
 

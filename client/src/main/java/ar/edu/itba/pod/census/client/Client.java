@@ -3,6 +3,7 @@ package ar.edu.itba.pod.census.client;
 import ar.edu.itba.pod.census.client.args.ClientArgs;
 import ar.edu.itba.pod.census.client.exception.ArgumentsErrorException;
 import ar.edu.itba.pod.census.client.exception.InputFileErrorException;
+import ar.edu.itba.pod.census.client.exception.OutputFileErrorException;
 import ar.edu.itba.pod.census.client.exception.QueryFailedException;
 import ar.edu.itba.pod.census.client.query.*;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
@@ -33,7 +34,7 @@ public final class Client {
   }
 
   private enum ExitStatus {
-    OK(0), ARGS_ERROR(1), INPUT_FILE_ERROR(2), QUERY_FAILED(3);
+    OK(0), ARGS_ERROR(1), INPUT_FILE_ERROR(2), QUERY_FAILED(3), OUT_FILE_ERROR(4);
 
     private final int status;
     ExitStatus(final int status) {
@@ -63,6 +64,9 @@ public final class Client {
     } catch (final QueryFailedException e) {
       System.err.println(e.getMessage());
       exitStatus = ExitStatus.QUERY_FAILED;
+    } catch (final OutputFileErrorException e) {
+      System.err.println(e.getMessage());
+      exitStatus = ExitStatus.OUT_FILE_ERROR;
     }
 
     hazelcastInstance.shutdown();
