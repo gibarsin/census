@@ -31,7 +31,6 @@ public final class RegionPopulationQuery extends AbstractQuery {
   }
 
   @Override
-  // TODO: change name from get to sth else
   protected void pickAClearClusterCollection(final HazelcastInstance hazelcastInstance) {
     input = hazelcastInstance.getList(SharedConfiguration.STRUCTURE_NAME);
     input.clear();

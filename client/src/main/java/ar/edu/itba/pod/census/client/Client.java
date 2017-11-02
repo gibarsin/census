@@ -23,14 +23,27 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 
 public final class Client {
-  private static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Client.class); // TODO: remove
   private static final ClientArgs CLIENT_ARGS = ClientArgs.getInstance();
 
-  // IMPORTANT: Ordinals are in use. Update this with caution
   private enum Query {
     REGION_POPULATION, DEPARTMENT_POPULATION, REGION_OCCUPATION,
     HOMES_IN_REGION, CITIZENS_PER_HOME_IN_REGION,
     DEPARTMENT_COUNT, SHARED_DEPARTMENT_COUNT
+  }
+
+  /**
+   * Queries index is offset by 1 to the left (i.e., query 1 is index 0, query 2 index 1 and so on...)
+   */
+  private static final Query[] QUERIES = new Query[Query.values().length];
+  static {
+    QUERIES[0] = Query.REGION_POPULATION;
+    QUERIES[1] = Query.DEPARTMENT_POPULATION;
+    QUERIES[2] = Query.REGION_OCCUPATION;
+    QUERIES[3] = Query.HOMES_IN_REGION;
+    QUERIES[4] = Query.CITIZENS_PER_HOME_IN_REGION;
+    QUERIES[5] = Query.DEPARTMENT_COUNT;
+    QUERIES[6] = Query.SHARED_DEPARTMENT_COUNT;
   }
 
   private enum ExitStatus {
@@ -38,7 +51,7 @@ public final class Client {
 
     private final int status;
     ExitStatus(final int status) {
-     this.status = status;
+      this.status = status;
     }
 
     public int getStatus() {
@@ -77,8 +90,7 @@ public final class Client {
 
   private static IQuery buildQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs)
           throws ArgumentsErrorException { // TODO: Add arguments validation on build
-    // Queries index is offset by 1 to the left (i.e., query 1 is index 0, query 2 index 1 and so on...)
-    final AbstractQuery.Builder builder = getBuilderForQuery(Query.values()[clientArgs.getQuery() - 1]);
+    final AbstractQuery.Builder builder = getBuilderForQuery(QUERIES[clientArgs.getQuery() - 1]);
     return builder.setHazelcastInstance(hazelcastInstance).setClientArgs(clientArgs).build();
   }
 
