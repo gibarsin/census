@@ -7,6 +7,9 @@ import ar.edu.itba.pod.census.client.exception.QueryFailedException;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.filter.LevelFilter;
+import ch.qos.logback.classic.filter.ThresholdFilter;
+import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.FileAppender;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.mapreduce.JobTracker;
@@ -37,7 +40,7 @@ public abstract class AbstractQuery implements IQuery {
     this.inPath = clientArgs.getInPath();
     this.outPath = clientArgs.getOutPath();
     // Set up a logger dynamically
-    this.logger = createLogger(clientArgs.getTimeOutPath());
+    this.logger = createLogger(clientArgs.getTimeOutPath(), clientArgs.getDebug());
   }
 
   // Thanks:
@@ -45,7 +48,7 @@ public abstract class AbstractQuery implements IQuery {
   // - https://stackoverflow.com/questions/1324053/configure-log4j-to-log-to-custom-file-at-runtime
   // - https://stackoverflow.com/questions/5448673/slf4j-logback-how-to-configure-loggers-in-runtime
   // - https://logback.qos.ch/manual/layouts.html
-  private Logger createLogger(final String timeOutPath) {
+  private Logger createLogger(final String timeOutPath, final boolean debug) {
     final LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 
     final PatternLayoutEncoder logEncoder = new PatternLayoutEncoder();
@@ -53,7 +56,12 @@ public abstract class AbstractQuery implements IQuery {
     logEncoder.setPattern("%-6date{dd/MM/YYYY HH:mm:ss:SSSS} %level  [%thread] %logger{36} \\(%F:%L\\) - %msg%n");
     logEncoder.start();
 
+    final ThresholdFilter filter = new ThresholdFilter();
+    filter.setLevel("INFO");
+    filter.start();
+
     final FileAppender<ch.qos.logback.classic.spi.ILoggingEvent> fileAppender = new FileAppender<>();
+    fileAppender.addFilter(filter);
     fileAppender.setContext(loggerContext);
     fileAppender.setName(timeOutPath);
     fileAppender.setEncoder(logEncoder);
@@ -63,8 +71,18 @@ public abstract class AbstractQuery implements IQuery {
 
     final Logger logger = (Logger) LoggerFactory.getLogger(AbstractQuery.class.getSimpleName());
     logger.setAdditive(false);
-    logger.setLevel(Level.INFO);
+    logger.setLevel(Level.DEBUG);
     logger.addAppender(fileAppender);
+
+    if (debug) {
+      final ConsoleAppender<ch.qos.logback.classic.spi.ILoggingEvent> logConsoleAppender = new ConsoleAppender<>();
+      logConsoleAppender.setContext(loggerContext);
+      logConsoleAppender.setName("Console");
+      logConsoleAppender.setEncoder(logEncoder);
+      logConsoleAppender.start();
+
+      logger.addAppender(logConsoleAppender);
+    }
 
     return logger;
   }

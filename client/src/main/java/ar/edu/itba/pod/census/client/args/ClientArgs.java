@@ -41,6 +41,9 @@ public final class ClientArgs {
   @Parameter(names = {"-prov", "-province"})
   private String province;
 
+  @Parameter(names = {"-d", "-debug"})
+  private boolean debug;
+
   private ClientArgs() {
   }
 
@@ -68,6 +71,7 @@ public final class ClientArgs {
     return timeOutPath;
   }
 
+  // TODO: check if it can be int
   public Integer getN() throws ArgumentsErrorException {
     if (!QUERIES_N.contains(query)) {
       throw new ArgumentsErrorException("N is undefined for this query");
@@ -82,5 +86,9 @@ public final class ClientArgs {
     }
 
     return Objects.requireNonNull(province);
+  }
+
+  public boolean getDebug() {
+    return debug;
   }
 }
