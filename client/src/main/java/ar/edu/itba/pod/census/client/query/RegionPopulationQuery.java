@@ -6,7 +6,6 @@ import ar.edu.itba.pod.census.collator.SortCollator;
 import ar.edu.itba.pod.census.combiner.RegionPopulationCombinerFactory;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
 import ar.edu.itba.pod.census.mapper.RegionPopulationMapper;
-import ar.edu.itba.pod.census.model.Citizen;
 import ar.edu.itba.pod.census.reducer.RegionPopulationReducerFactory;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IList;
@@ -21,7 +20,7 @@ import java.util.concurrent.ExecutionException;
 @SuppressWarnings("deprecation")
 // Intentionally as we are using deprecated Hazelcast features
 public final class RegionPopulationQuery extends AbstractQuery {
-  private IList<Citizen> input;
+  private IList<String> input;
   private ReducingSubmittableJob<String, String, Integer> mapReducerJob;
   private Collator<Entry<String, Integer>, List<Entry<String, Integer>>> collator;
   private List<Entry<String, Integer>> jobResult;
@@ -38,18 +37,14 @@ public final class RegionPopulationQuery extends AbstractQuery {
 
   @Override
   protected void addRecordToClusterCollection(final String[] csvRecord) {
-    input.add(new Citizen(
-            Integer.parseInt(csvRecord[Headers.EMPLOYMENT_STATUS.getColumn()].trim()),
-            Integer.parseInt(csvRecord[Headers.HOME_ID.getColumn()].trim()),
-            csvRecord[Headers.DEPARTMENT_NAME.getColumn()],
-            csvRecord[Headers.PROVINCE_NAME.getColumn()]));
+    input.add(csvRecord[Headers.PROVINCE_NAME.getColumn()]);
   }
 
   @Override
-  protected void prepateJobResources(final JobTracker jobTracker) {
+  protected void prepareJobResources(final JobTracker jobTracker) {
     // Create the custom job
-    final KeyValueSource<String, Citizen> source = KeyValueSource.fromList(input);
-    final Job<String, Citizen> job = jobTracker.newJob(source);
+    final KeyValueSource<String, String> source = KeyValueSource.fromList(input);
+    final Job<String, String> job = jobTracker.newJob(source);
 
     // Prepare the map reduce job to be submitted
     mapReducerJob = job.mapper(new RegionPopulationMapper())

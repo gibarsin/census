@@ -70,7 +70,7 @@ public final class DepartmentPopulationQuery extends AbstractQuery {
   }
 
   @Override
-  protected void prepateJobResources(final JobTracker jobTracker) {
+  protected void prepareJobResources(final JobTracker jobTracker) {
     // TODO
   }
 

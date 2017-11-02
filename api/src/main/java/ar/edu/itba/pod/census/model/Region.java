@@ -21,6 +21,7 @@ public enum Region {
     return Normalizer.normalize(stringValue, Form.NFD);
   }
 
+  @Deprecated // TODO: Delete this
   public static Region fromProvince(final Province province) {
     switch (province) {
       case JUJUY:
@@ -61,6 +62,7 @@ public enum Region {
     throw new IllegalArgumentException("No region for province " + province + " found");
   }
 
+  @Deprecated // TODO: Delete this
   public static String fromProvince(final String province) {
     switch (province.toLowerCase()) {
       case "jujuy":

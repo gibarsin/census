@@ -47,7 +47,8 @@ public final class Client {
   }
 
   private enum ExitStatus {
-    OK(0), ARGS_ERROR(1), INPUT_FILE_ERROR(2), QUERY_FAILED(3), OUT_FILE_ERROR(4);
+    // 1 is used by hazelcast connections errors
+    OK(0), ARGS_ERROR(2), INPUT_FILE_ERROR(3), QUERY_FAILED(4), OUT_FILE_ERROR(5);
 
     private final int status;
     ExitStatus(final int status) {
@@ -61,7 +62,6 @@ public final class Client {
 
   public static void main(final String[] args) {
     ExitStatus exitStatus = ExitStatus.OK;
-    // TODO: check if exceptions here can be handled if no hazelcast client can be grabbed/consider other hazelcast errors too
     final HazelcastInstance hazelcastInstance = createHazelcastClient();
 
     try {

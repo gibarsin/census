@@ -7,7 +7,6 @@ import ar.edu.itba.pod.census.client.exception.QueryFailedException;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.classic.filter.LevelFilter;
 import ch.qos.logback.classic.filter.ThresholdFilter;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.FileAppender;
@@ -92,7 +91,7 @@ public abstract class AbstractQuery implements IQuery {
     fillData(inPath);
     final JobTracker jobTracker = hazelcastInstance.getJobTracker(SharedConfiguration.TRACKER_NAME);
     // Prepare the Map Reduce Job
-    prepateJobResources(jobTracker);
+    prepareJobResources(jobTracker);
     // IMPORTANT: Prior to the log so as not to affect the logging time (which is the one considered by professors)
     final long start = System.currentTimeMillis();
     try {
@@ -176,7 +175,7 @@ public abstract class AbstractQuery implements IQuery {
    *
    * @param jobTracker The job tracker to be used to create the job to be submitted later
    */
-  protected abstract void prepateJobResources(final JobTracker jobTracker);
+  protected abstract void prepareJobResources(final JobTracker jobTracker);
 
   /**
    * Submit the already prepared job and internally store its result to lately process it.
