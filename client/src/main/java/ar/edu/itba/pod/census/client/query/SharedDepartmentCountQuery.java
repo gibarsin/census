@@ -65,7 +65,7 @@ public final class SharedDepartmentCountQuery extends AbstractQuery {
   }
 
   @Override
-  protected void getAClearClusterCollection(final HazelcastInstance hazelcastInstance) {
+  protected void pickAClearClusterCollection(final HazelcastInstance hazelcastInstance) {
     // TODO
   }
 
@@ -75,7 +75,7 @@ public final class SharedDepartmentCountQuery extends AbstractQuery {
   }
 
   @Override
-  protected void buildMapReduceJob(final JobTracker jobTracker) {
+  protected void prepateJobResources(final JobTracker jobTracker) {
     // TODO
   }
 

@@ -31,7 +31,8 @@ public final class RegionPopulationQuery extends AbstractQuery {
   }
 
   @Override
-  protected void getAClearClusterCollection(final HazelcastInstance hazelcastInstance) {
+  // TODO: change name from get to sth else
+  protected void pickAClearClusterCollection(final HazelcastInstance hazelcastInstance) {
     input = hazelcastInstance.getList(SharedConfiguration.STRUCTURE_NAME);
     input.clear();
   }
@@ -46,7 +47,7 @@ public final class RegionPopulationQuery extends AbstractQuery {
   }
 
   @Override
-  protected void buildMapReduceJob(final JobTracker jobTracker) {
+  protected void prepateJobResources(final JobTracker jobTracker) {
     // Create the custom job
     final KeyValueSource<String, Citizen> source = KeyValueSource.fromList(input);
     final Job<String, Citizen> job = jobTracker.newJob(source);
