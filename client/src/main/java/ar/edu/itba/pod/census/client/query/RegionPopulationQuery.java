@@ -13,6 +13,7 @@ import com.hazelcast.mapreduce.*;
 
 import java.io.PrintStream;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
@@ -35,9 +36,16 @@ public final class RegionPopulationQuery extends AbstractQuery {
     input.clear();
   }
 
+  private List<String> list = new LinkedList<>();
+
   @Override
   protected void addRecordToClusterCollection(final String[] csvRecord) {
-    input.add(csvRecord[Headers.PROVINCE_NAME.getColumn()]);
+//    input.add(csvRecord[Headers.PROVINCE_NAME.getColumn()]);
+    list.add(csvRecord[Headers.PROVINCE_NAME.getColumn()]);
+  }
+
+  protected void submitAllRecordsToCluster() {
+    input.addAll(list);
   }
 
   @Override

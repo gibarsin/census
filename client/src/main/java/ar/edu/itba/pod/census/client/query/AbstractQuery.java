@@ -138,6 +138,7 @@ public abstract class AbstractQuery implements IQuery {
       while ((line = br.readLine()) != null) {
         addRecordToClusterCollection(line.split(CSV_SPLITTER));
       }
+      submitAllRecordsToCluster();
     } catch (final IOException exception) {
       logger.error("Could not open/read input file", exception);
       throw new InputFileErrorException("There was an error while trying to open/read the input file");
@@ -146,6 +147,10 @@ public abstract class AbstractQuery implements IQuery {
     // IMPORTANT: Following the log so as not to affect the logging time (which is the one considered by professors)
     final long end = System.currentTimeMillis();
     logger.debug("Tiempo de lectura entre ambos logs (aproximadamente): {} ms.", end - start);
+  }
+
+  protected void submitAllRecordsToCluster() {
+    // TODO: tmp
   }
 
   /**
