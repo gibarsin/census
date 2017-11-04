@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.census.server;
 
 import ar.edu.itba.pod.census.config.SharedConfiguration;
+import ar.edu.itba.pod.census.model.SerialDataFactory;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
@@ -24,6 +25,9 @@ public final class Server {
     final Config serverConfig = new Config();
 
     serverConfig.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
+
+    serverConfig.getSerializationConfig()
+        .addDataSerializableFactory(SerialDataFactory.FACTORY_ID, new SerialDataFactory());
 
     serverConfig.getGroupConfig()
         .setName(SharedConfiguration.GROUP_USERNAME)
