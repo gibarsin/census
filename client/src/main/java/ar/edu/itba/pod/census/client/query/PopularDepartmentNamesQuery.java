@@ -3,6 +3,7 @@ package ar.edu.itba.pod.census.client.query;
 import ar.edu.itba.pod.census.client.CensusCSVRecords.Headers;
 import ar.edu.itba.pod.census.client.args.ClientArgs;
 import ar.edu.itba.pod.census.collator.LimitedSortCollator;
+import ar.edu.itba.pod.census.collator.MinIntegerValueSortCollator;
 import ar.edu.itba.pod.census.combiner.PopularDepartmentCombinerFactory;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
 import ar.edu.itba.pod.census.mapper.PopularDepartmentMapper;
@@ -56,7 +57,7 @@ public final class PopularDepartmentNamesQuery extends AbstractQuery {
     // Prepare the collator to post-process the job's result
     // Compiler complains if we do not set this explicitly
     //noinspection Convert2Diamond
-    collator = new LimitedSortCollator<String, Integer>(requiredN, Collections.reverseOrder(Map.Entry.comparingByValue()));
+    collator = new MinIntegerValueSortCollator<>(requiredN, Collections.reverseOrder(Map.Entry.comparingByValue()));
   }
 
   @Override
