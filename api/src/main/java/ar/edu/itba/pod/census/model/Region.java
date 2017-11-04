@@ -4,11 +4,11 @@ import java.text.Normalizer;
 import java.text.Normalizer.Form;
 
 public enum Region {
-  NORTE_GRANDE("región del norte grande argentino"),
-  NUEVO_CUYO("región del nuevo cuyo"),
-  CENTRO("región centro"),
-  BUENOS_AIRES("región buenos aires"),
-  PATAGONICA("región patagónica");
+  NORTE_GRANDE("Región del Norte Grande Argentino"),
+  NUEVO_CUYO("Región del Nuevo Cuyo"),
+  CENTRO("Región Centro"),
+  BUENOS_AIRES("Región Buenos Aires"),
+  PATAGONICA("Región Patagónica");
 
   private final String stringValue;
 

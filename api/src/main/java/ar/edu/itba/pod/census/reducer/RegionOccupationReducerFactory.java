@@ -19,7 +19,7 @@ public class RegionOccupationReducerFactory implements ReducerFactory<String, In
     @Override
     public void reduce(final Integer value) {
       unemployed += value;
-      total++;
+      total++; // TODO: No haria esto ni loco; le pasaria el valor dentro de un objeto custom, porque asi como no sabemos que value viene en unemplooyed, tampoco sabemos si al reducir se llama una vez por cada uno o como lo maneja internamente hazelcast.
     }
 
     @Override

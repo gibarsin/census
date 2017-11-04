@@ -103,7 +103,7 @@ public final class Client {
       case REGION_OCCUPATION:
         return new RegionOccupationQuery.Builder();
       case HOMES_IN_REGION:
-        return new HomesInRegionQuery.Builder();
+        return new HomeCountPerRegionQuery.Builder();
       case CITIZENS_PER_HOME_IN_REGION:
         return new CitizensPerHomeInRegionQuery.Builder();
       case DEPARTMENT_COUNT:
@@ -153,6 +153,7 @@ public final class Client {
     }
   }
 
+  // TODO: later with Gonza, after defining how are we going to do query 2
   private static void handleQuery3(final HazelcastInstance hazelcastClient) {
     LOGGER.debug("Submitting job...");
     final ICompletableFuture<Map<String, BigDecimal>> futureResponse =
@@ -173,7 +174,7 @@ public final class Client {
   private static void handleQuery4(final HazelcastInstance hazelcastClient) {
     LOGGER.debug("Submitting job...");
     final ICompletableFuture<List<Entry<String, Integer>>> futureResponse =
-            HomesInRegionQuery.start(hazelcastClient);
+            HomeCountPerRegionQuery.start(hazelcastClient);
     LOGGER.info("Job submitted");
 
     try {
