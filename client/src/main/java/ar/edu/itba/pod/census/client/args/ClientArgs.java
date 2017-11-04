@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.census.client.args;
 
+import ar.edu.itba.pod.census.client.exception.ArgumentsErrorException;
 import com.beust.jcommander.IDefaultProvider;
 import com.beust.jcommander.Parameter;
 import java.util.ArrayList;
@@ -16,8 +17,6 @@ public final class ClientArgs {
   public static final IDefaultProvider SYSTEM_PROPERTIES_PROVIDER =
       optionName -> System.getProperties().getProperty(optionName.replaceAll("^-+", ""));
 
-  private static final int QUERY_MAX = 7;
-  private static final int QUERY_MIN = 1;
   private static final List<Integer> QUERIES_N = Arrays.asList(2, 6, 7);
   private static final List<Integer> QUERIES_PROVINCE = Collections.singletonList(2);
 
@@ -41,6 +40,9 @@ public final class ClientArgs {
 
   @Parameter(names = {"-prov", "-province"})
   private String province;
+
+  @Parameter(names = {"-d", "-debug"})
+  private boolean debug;
 
   private ClientArgs() {
   }
@@ -69,19 +71,25 @@ public final class ClientArgs {
     return timeOutPath;
   }
 
-  public Integer getN() {
-    if (!QUERIES_N.contains(query)) {
-      throw new IllegalStateException("N is undefined for this query");
-    }
+  public int getN() {
+    // TODO: move this validation to somewhere else; build() method perhaps?
+//    if (!QUERIES_N.contains(query)) {
+//      throw new ArgumentsErrorException("N is undefined for this query");
+//    }
 
     return Objects.requireNonNull(n);
   }
 
   public String getProvince() {
-    if (!QUERIES_PROVINCE.contains(query)) {
-      throw new IllegalStateException("Province is undefined for this query");
-    }
+    // TODO: move this validation to somewhere else; build() method perhaps?
+//    if (!QUERIES_PROVINCE.contains(query)) {
+//      throw new ArgumentsErrorException("Province is undefined for this query");
+//    }
 
     return Objects.requireNonNull(province);
+  }
+
+  public boolean getDebug() {
+    return debug;
   }
 }

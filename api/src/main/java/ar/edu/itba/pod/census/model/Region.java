@@ -4,11 +4,11 @@ import java.text.Normalizer;
 import java.text.Normalizer.Form;
 
 public enum Region {
-  NORTE_GRANDE("región del norte grande argentino"),
-  NUEVO_CUYO("región del nuevo cuyo"),
-  CENTRO("región centro"),
-  BUENOS_AIRES("región buenos aires"),
-  PATAGONICA("región patagónica");
+  NORTE_GRANDE("Región del Norte Grande Argentino"),
+  NUEVO_CUYO("Región del Nuevo Cuyo"),
+  CENTRO("Región Centro"),
+  BUENOS_AIRES("Región Buenos Aires"),
+  PATAGONICA("Región Patagónica");
 
   private final String stringValue;
 
@@ -21,6 +21,7 @@ public enum Region {
     return Normalizer.normalize(stringValue, Form.NFD);
   }
 
+  @Deprecated // TODO: Delete this
   public static Region fromProvince(final Province province) {
     switch (province) {
       case JUJUY:
@@ -61,6 +62,7 @@ public enum Region {
     throw new IllegalArgumentException("No region for province " + province + " found");
   }
 
+  @Deprecated // TODO: Delete this
   public static String fromProvince(final String province) {
     switch (province.toLowerCase()) {
       case "jujuy":

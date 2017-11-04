@@ -59,4 +59,40 @@ public class Citizen implements Serializable {
       throw new IllegalArgumentException("Invalid employment status value");
     }
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    Citizen citizen = (Citizen) o;
+
+    if (homeId != citizen.homeId) {
+      return false;
+    }
+    if (employmentStatus != citizen.employmentStatus) {
+      return false;
+    }
+    if (!departmentName.equals(citizen.departmentName)) {
+      return false;
+    }
+    if (!province.equals(citizen.province)) {
+      return false;
+    }
+    return region.equals(citizen.region);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = employmentStatus.hashCode();
+    result = 31 * result + homeId;
+    result = 31 * result + departmentName.hashCode();
+    result = 31 * result + province.hashCode();
+    result = 31 * result + region.hashCode();
+    return result;
+  }
 }

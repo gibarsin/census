@@ -8,13 +8,8 @@ import java.util.Iterator;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public final class CensusCSVRecords implements Iterator<CSVRecord>, Closeable, AutoCloseable {
-
-  private final static Logger LOGGER = LoggerFactory.getLogger(CensusCSVRecords.class);
-
   private final Reader inFile;
   private final CSVParser parser;
   private final Iterator<CSVRecord> recordsIterator;
@@ -51,7 +46,18 @@ public final class CensusCSVRecords implements Iterator<CSVRecord>, Closeable, A
   }
 
   // IMPORTANT: Do not alter the order of the headers values
+  // TODO: Migrate this to indexes, remove the above behavior and leave only this enum
   public enum Headers {
-    EMPLOYMENT_STATUS, HOME_ID, DEPARTMENT_NAME, PROVINCE_NAME
+    EMPLOYMENT_STATUS(0), HOME_ID(1), DEPARTMENT_NAME(2), PROVINCE_NAME(3);
+
+    private final int column;
+
+    Headers(final int column) {
+      this.column = column;
+    }
+
+    public int getColumn() {
+      return column;
+    }
   }
 }

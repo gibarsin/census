@@ -2,59 +2,62 @@ package ar.edu.itba.pod.census.client.query;
 
 import ar.edu.itba.pod.census.client.CensusCSVRecords.Headers;
 import ar.edu.itba.pod.census.client.args.ClientArgs;
-import ar.edu.itba.pod.census.collator.SortCollator;
-import ar.edu.itba.pod.census.combiner.NoKeyAdderCombinerFactory;
+import ar.edu.itba.pod.census.collator.LimitedSortCollator;
+import ar.edu.itba.pod.census.collator.MinIntegerValueSortCollator;
+import ar.edu.itba.pod.census.combiner.PopularDepartmentCombinerFactory;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
-import ar.edu.itba.pod.census.mapper.RegionPopulationMapper;
-import ar.edu.itba.pod.census.reducer.NoKeyAdderReducerFactory;
+import ar.edu.itba.pod.census.mapper.PopularDepartmentMapper;
+import ar.edu.itba.pod.census.reducer.PopularDepartmentNamesReducerFactory;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IList;
+import com.hazelcast.core.MultiMap;
 import com.hazelcast.mapreduce.*;
 
 import java.io.PrintStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-@SuppressWarnings("deprecation")
-// Intentionally as we are using deprecated Hazelcast features
-public final class RegionPopulationQuery extends AbstractQuery {
-  private IList<String> input;
-  private ReducingSubmittableJob<String, String, Integer> mapReducerJob;
-  private Collator<Entry<String, Integer>, List<Entry<String, Integer>>> collator;
-  private List<Entry<String, Integer>> jobResult;
+public final class PopularDepartmentNamesQuery extends AbstractQuery {
+  private final int requiredN;
 
-  private RegionPopulationQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
+  private MultiMap<String, String> input;
+  private ReducingSubmittableJob<String, String, Integer> mapReducerJob;
+  private Collator<Map.Entry<String, Integer>, List<Map.Entry<String, Integer>>> collator;
+  private List<Map.Entry<String, Integer>> jobResult;
+
+  private PopularDepartmentNamesQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
     super(hazelcastInstance, clientArgs);
+    this.requiredN = clientArgs.getN();
   }
 
   @Override
   protected void pickAClearClusterCollection(final HazelcastInstance hazelcastInstance) {
-    input = hazelcastInstance.getList(SharedConfiguration.STRUCTURE_NAME);
+    input = hazelcastInstance.getMultiMap(SharedConfiguration.STRUCTURE_NAME);
     input.clear();
   }
 
   @Override
   protected void addRecordToClusterCollection(final String[] csvRecord) {
-    input.add(csvRecord[Headers.PROVINCE_NAME.getColumn()]);
+    input.put(csvRecord[Headers.DEPARTMENT_NAME.getColumn()].trim(),
+              csvRecord[Headers.PROVINCE_NAME.getColumn()].trim());
   }
 
   @Override
   protected void prepareJobResources(final JobTracker jobTracker) {
     // Create the custom job
-    final KeyValueSource<String, String> source = KeyValueSource.fromList(input);
+    final KeyValueSource<String, String> source = KeyValueSource.fromMultiMap(input);
     final Job<String, String> job = jobTracker.newJob(source);
 
     // Prepare the map reduce job to be submitted
-    mapReducerJob = job.mapper(new RegionPopulationMapper())
-            .combiner(new NoKeyAdderCombinerFactory())
-            .reducer(new NoKeyAdderReducerFactory());
+    mapReducerJob = job.mapper(new PopularDepartmentMapper())
+            .combiner(new PopularDepartmentCombinerFactory())
+            .reducer(new PopularDepartmentNamesReducerFactory());
 
     // Prepare the collator to post-process the job's result
     // Compiler complains if we do not set this explicitly
     //noinspection Convert2Diamond
-    collator = new SortCollator<String, Integer>(Collections.reverseOrder(Entry.comparingByValue()));
+    collator = new MinIntegerValueSortCollator<>(requiredN, Collections.reverseOrder(Map.Entry.comparingByValue()));
   }
 
   @Override
@@ -70,7 +73,7 @@ public final class RegionPopulationQuery extends AbstractQuery {
   public static class Builder extends AbstractQuery.Builder {
     @Override
     protected AbstractQuery build(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
-      return new RegionPopulationQuery(hazelcastInstance, clientArgs);
+      return new PopularDepartmentNamesQuery(hazelcastInstance, clientArgs);
     }
   }
 }

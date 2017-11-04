@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.census.server;
 
+import ar.edu.itba.pod.census.model.SerialDataFactory;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
@@ -25,6 +26,8 @@ public final class Server {
     final Config serverConfig = new XmlConfigBuilder(
         System.getProperty("user.dir") + "/hazelcast.xml")
         .build();
+    serverConfig.getSerializationConfig()
+            .addDataSerializableFactory(SerialDataFactory.FACTORY_ID, new SerialDataFactory());
 
     return Hazelcast.newHazelcastInstance(serverConfig);
   }
