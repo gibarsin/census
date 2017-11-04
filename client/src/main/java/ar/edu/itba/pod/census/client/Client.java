@@ -104,9 +104,9 @@ public final class Client {
       case CITIZENS_PER_HOME_BY_REGION:
         return new CitizensPerHomeByRegionQuery.Builder();
       case DEPARTMENT_COUNT:
-        return new PopularDepartmentNames.Builder();
+        return new PopularDepartmentNamesQuery.Builder();
       case SHARED_DEPARTMENT_COUNT:
-        return new SharedDepartmentCountQuery.Builder();
+        return new PopularDepartmentSharedCountQuery.Builder();
       default:
         throw new IllegalStateException("No valid query selected");
     }
@@ -130,23 +130,5 @@ public final class Client {
             .setPassword(SharedConfiguration.GROUP_PASSWORD);
 
     return HazelcastClient.newHazelcastClient(clientConfig);
-  }
-
-  private static void handleQuery7(final HazelcastInstance hazelcastClient) throws ArgumentsErrorException {
-    LOGGER.debug("Submitting job...");
-    final ICompletableFuture<List<Entry<String, Integer>>> futureResponse =
-            SharedDepartmentCountQuery.start(hazelcastClient, CLIENT_ARGS.getN());
-    LOGGER.info("Job submitted");
-
-    try {
-      final List<Entry<String, Integer>> response = futureResponse.get();
-      LOGGER.info("Job successful");
-
-      for (final Entry<String, Integer> entry : response) {
-        System.out.println(entry.getKey() + " -> " + entry.getValue());
-      }
-    } catch (final InterruptedException | ExecutionException exception) {
-      LOGGER.error("Job failed", exception);
-    }
   }
 }

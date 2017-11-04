@@ -3,9 +3,9 @@ package ar.edu.itba.pod.census.client.query;
 import ar.edu.itba.pod.census.client.CensusCSVRecords.Headers;
 import ar.edu.itba.pod.census.client.args.ClientArgs;
 import ar.edu.itba.pod.census.collator.LimitedSortCollator;
-import ar.edu.itba.pod.census.combiner.PopularDepartmentNamesCombinerFactory;
+import ar.edu.itba.pod.census.combiner.PopularDepartmentCombinerFactory;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
-import ar.edu.itba.pod.census.mapper.PopularDepartmentNamesMapper;
+import ar.edu.itba.pod.census.mapper.PopularDepartmentMapper;
 import ar.edu.itba.pod.census.reducer.PopularDepartmentNamesReducerFactory;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public final class PopularDepartmentNames extends AbstractQuery {
+public final class PopularDepartmentNamesQuery extends AbstractQuery {
   private final int requiredN;
 
   private MultiMap<String, String> input;
@@ -25,7 +25,7 @@ public final class PopularDepartmentNames extends AbstractQuery {
   private Collator<Map.Entry<String, Integer>, List<Map.Entry<String, Integer>>> collator;
   private List<Map.Entry<String, Integer>> jobResult;
 
-  private PopularDepartmentNames(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
+  private PopularDepartmentNamesQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
     super(hazelcastInstance, clientArgs);
     this.requiredN = clientArgs.getN();
   }
@@ -49,8 +49,8 @@ public final class PopularDepartmentNames extends AbstractQuery {
     final Job<String, String> job = jobTracker.newJob(source);
 
     // Prepare the map reduce job to be submitted
-    mapReducerJob = job.mapper(new PopularDepartmentNamesMapper())
-            .combiner(new PopularDepartmentNamesCombinerFactory())
+    mapReducerJob = job.mapper(new PopularDepartmentMapper())
+            .combiner(new PopularDepartmentCombinerFactory())
             .reducer(new PopularDepartmentNamesReducerFactory());
 
     // Prepare the collator to post-process the job's result
@@ -72,7 +72,7 @@ public final class PopularDepartmentNames extends AbstractQuery {
   public static class Builder extends AbstractQuery.Builder {
     @Override
     protected AbstractQuery build(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
-      return new PopularDepartmentNames(hazelcastInstance, clientArgs);
+      return new PopularDepartmentNamesQuery(hazelcastInstance, clientArgs);
     }
   }
 }

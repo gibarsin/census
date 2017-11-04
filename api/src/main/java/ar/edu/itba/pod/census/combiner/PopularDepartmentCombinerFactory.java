@@ -6,7 +6,7 @@ import com.hazelcast.mapreduce.CombinerFactory;
 import java.util.HashSet;
 import java.util.Set;
 
-public class PopularDepartmentNamesCombinerFactory implements CombinerFactory<String, String, Set<String>> {
+public class PopularDepartmentCombinerFactory implements CombinerFactory<String, String, Set<String>> {
   @Override
   public Combiner<String, Set<String>> newCombiner(final String s) {
     return new PopularDepartmentNamesCombiner();
