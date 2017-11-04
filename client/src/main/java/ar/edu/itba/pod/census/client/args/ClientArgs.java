@@ -1,6 +1,5 @@
 package ar.edu.itba.pod.census.client.args;
 
-import ar.edu.itba.pod.census.client.exception.ArgumentsErrorException;
 import com.beust.jcommander.IDefaultProvider;
 import com.beust.jcommander.Parameter;
 import java.util.ArrayList;

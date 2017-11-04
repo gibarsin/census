@@ -5,21 +5,25 @@ import ar.edu.itba.pod.census.client.exception.ArgumentsErrorException;
 import ar.edu.itba.pod.census.client.exception.InputFileErrorException;
 import ar.edu.itba.pod.census.client.exception.OutputFileErrorException;
 import ar.edu.itba.pod.census.client.exception.QueryFailedException;
-import ar.edu.itba.pod.census.client.query.*;
+import ar.edu.itba.pod.census.client.query.AbstractQuery;
+import ar.edu.itba.pod.census.client.query.CitizensPerHomeByRegionQuery;
+import ar.edu.itba.pod.census.client.query.DepartmentPopulationQuery;
+import ar.edu.itba.pod.census.client.query.HomeCountPerRegionQuery;
+import ar.edu.itba.pod.census.client.query.IQuery;
+import ar.edu.itba.pod.census.client.query.PopularDepartmentNamesQuery;
+import ar.edu.itba.pod.census.client.query.PopularDepartmentSharedCountQuery;
+import ar.edu.itba.pod.census.client.query.RegionOccupationQuery;
+import ar.edu.itba.pod.census.client.query.RegionPopulationQuery;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
 import com.beust.jcommander.JCommander;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.ICompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
-
 public final class Client {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(Client.class); // TODO: remove
   private static final ClientArgs CLIENT_ARGS = ClientArgs.getInstance();
 
@@ -30,9 +34,11 @@ public final class Client {
   }
 
   /**
-   * Queries index is offset by 1 to the left (i.e., query 1 is index 0, query 2 index 1 and so on...)
+   * Queries index is offset by 1 to the left (i.e., query 1 is index 0, query 2 index 1 and so
+   * on...)
    */
   private static final Query[] QUERIES = new Query[Query.values().length];
+
   static {
     QUERIES[0] = Query.REGION_POPULATION;
     QUERIES[1] = Query.DEPARTMENT_POPULATION;
@@ -48,6 +54,7 @@ public final class Client {
     OK(0), ARGS_ERROR(2), INPUT_FILE_ERROR(3), QUERY_FAILED(4), OUT_FILE_ERROR(5);
 
     private final int status;
+
     ExitStatus(final int status) {
       this.status = status;
     }
@@ -59,10 +66,10 @@ public final class Client {
 
   public static void main(final String[] args) {
     ExitStatus exitStatus = ExitStatus.OK;
+    parseClientArguments(args);
     final HazelcastInstance hazelcastInstance = createHazelcastClient();
 
     try {
-      parseClientArguments(args);
       final IQuery query = buildQuery(hazelcastInstance, CLIENT_ARGS);
       query.run();
     } catch (final ArgumentsErrorException e) {
@@ -85,8 +92,9 @@ public final class Client {
     System.exit(exitStatus.getStatus());
   }
 
-  private static IQuery buildQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs)
-          throws ArgumentsErrorException { // TODO: Add arguments validation on build
+  private static IQuery buildQuery(final HazelcastInstance hazelcastInstance,
+      final ClientArgs clientArgs)
+      throws ArgumentsErrorException { // TODO: Add arguments validation on build
     final AbstractQuery.Builder builder = getBuilderForQuery(QUERIES[clientArgs.getQuery() - 1]);
     return builder.setHazelcastInstance(hazelcastInstance).setClientArgs(clientArgs).build();
   }
@@ -114,20 +122,20 @@ public final class Client {
 
   private static void parseClientArguments(final String[] args) {
     JCommander.newBuilder()
-            .addObject(CLIENT_ARGS)
-            .defaultProvider(ClientArgs.SYSTEM_PROPERTIES_PROVIDER)
-            .build()
-            .parse(args);
+        .addObject(CLIENT_ARGS)
+        .defaultProvider(ClientArgs.SYSTEM_PROPERTIES_PROVIDER)
+        .build()
+        .parse(args);
   }
 
   private static HazelcastInstance createHazelcastClient() {
     final ClientConfig clientConfig = new ClientConfig();
 
     clientConfig.getNetworkConfig().setAddresses(CLIENT_ARGS.getAddresses());
-
+    
     clientConfig.getGroupConfig()
-            .setName(SharedConfiguration.GROUP_USERNAME)
-            .setPassword(SharedConfiguration.GROUP_PASSWORD);
+        .setName(SharedConfiguration.GROUP_USERNAME)
+        .setPassword(SharedConfiguration.GROUP_PASSWORD);
 
     return HazelcastClient.newHazelcastClient(clientConfig);
   }
