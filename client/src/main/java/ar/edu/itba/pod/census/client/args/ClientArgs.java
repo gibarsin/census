@@ -71,19 +71,20 @@ public final class ClientArgs {
     return timeOutPath;
   }
 
-  // TODO: check if it can be int
-  public Integer getN() throws ArgumentsErrorException {
-    if (!QUERIES_N.contains(query)) {
-      throw new ArgumentsErrorException("N is undefined for this query");
-    }
+  public int getN() {
+    // TODO: move this validation to somewhere else; build() method perhaps?
+//    if (!QUERIES_N.contains(query)) {
+//      throw new ArgumentsErrorException("N is undefined for this query");
+//    }
 
     return Objects.requireNonNull(n);
   }
 
-  public String getProvince() throws ArgumentsErrorException {
-    if (!QUERIES_PROVINCE.contains(query)) {
-      throw new ArgumentsErrorException("Province is undefined for this query");
-    }
+  public String getProvince() {
+    // TODO: move this validation to somewhere else; build() method perhaps?
+//    if (!QUERIES_PROVINCE.contains(query)) {
+//      throw new ArgumentsErrorException("Province is undefined for this query");
+//    }
 
     return Objects.requireNonNull(province);
   }

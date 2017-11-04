@@ -3,10 +3,10 @@ package ar.edu.itba.pod.census.client.query;
 import ar.edu.itba.pod.census.client.CensusCSVRecords.Headers;
 import ar.edu.itba.pod.census.client.args.ClientArgs;
 import ar.edu.itba.pod.census.collator.SortCollator;
-import ar.edu.itba.pod.census.combiner.RegionPopulationCombinerFactory;
+import ar.edu.itba.pod.census.combiner.NoKeyAdderCombinerFactory;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
 import ar.edu.itba.pod.census.mapper.RegionPopulationMapper;
-import ar.edu.itba.pod.census.reducer.RegionPopulationReducerFactory;
+import ar.edu.itba.pod.census.reducer.NoKeyAdderReducerFactory;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IList;
 import com.hazelcast.mapreduce.*;
@@ -48,8 +48,8 @@ public final class RegionPopulationQuery extends AbstractQuery {
 
     // Prepare the map reduce job to be submitted
     mapReducerJob = job.mapper(new RegionPopulationMapper())
-            .combiner(new RegionPopulationCombinerFactory())
-            .reducer(new RegionPopulationReducerFactory());
+            .combiner(new NoKeyAdderCombinerFactory())
+            .reducer(new NoKeyAdderReducerFactory());
 
     // Prepare the collator to post-process the job's result
     // Compiler complains if we do not set this explicitly
@@ -64,7 +64,7 @@ public final class RegionPopulationQuery extends AbstractQuery {
 
   @Override
   protected void processJobResult(final PrintStream output) {
-    jobResult.forEach(entry -> output.println(entry.getKey() + " -> " + entry.getValue()));
+    jobResult.forEach(entry -> output.println(entry.getKey() + "," + entry.getValue()));
   }
 
   public static class Builder extends AbstractQuery.Builder {
