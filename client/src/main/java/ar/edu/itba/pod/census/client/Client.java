@@ -135,24 +135,6 @@ public final class Client {
     return HazelcastClient.newHazelcastClient(clientConfig);
   }
 
-  // TODO: later with Gonza, after defining how are we going to do query 2
-  private static void handleQuery3(final HazelcastInstance hazelcastClient) {
-    LOGGER.debug("Submitting job...");
-    final ICompletableFuture<Map<String, BigDecimal>> futureResponse =
-            RegionOccupationQuery.start(hazelcastClient);
-    LOGGER.info("Job submitted");
-
-    try {
-      final Map<String, BigDecimal> response = futureResponse.get();
-      LOGGER.info("Job successful");
-      for (final Map.Entry<String, BigDecimal> entry : response.entrySet()) {
-        System.out.println(entry.getKey() + " -> " + entry.getValue());
-      }
-    } catch (final InterruptedException | ExecutionException exception) {
-      LOGGER.error("Job failed", exception);
-    }
-  }
-
   private static void handleQuery6(final HazelcastInstance hazelcastClient) throws ArgumentsErrorException {
     LOGGER.debug("Submitting job...");
     final ICompletableFuture<List<Entry<String, Integer>>> futureResponse =

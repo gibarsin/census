@@ -3,17 +3,17 @@ package ar.edu.itba.pod.census.model;
 import java.io.Serializable;
 
 public class Container implements Serializable {
-  public enum EMPLOYMENT_STATUS {
+  public enum EmploymentStatus {
     UNKNOWN(0), EMPLOYED(1), UNEMPLOYED(2), INACTIVE(3);
 
     private final int value;
 
-    EMPLOYMENT_STATUS(final int value) {
+    EmploymentStatus(final int value) {
       this.value = value;
     }
 
-    public static EMPLOYMENT_STATUS valueOf(final int value) {
-      for (final EMPLOYMENT_STATUS employmentStatus : EMPLOYMENT_STATUS.values()) {
+    public static EmploymentStatus valueOf(final int value) {
+      for (final EmploymentStatus employmentStatus : EmploymentStatus.values()) {
         if (employmentStatus.value == value) {
           return employmentStatus;
         }

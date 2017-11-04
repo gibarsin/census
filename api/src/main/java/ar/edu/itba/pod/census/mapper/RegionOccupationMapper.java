@@ -1,15 +1,24 @@
 package ar.edu.itba.pod.census.mapper;
 
-import static ar.edu.itba.pod.census.model.Citizen.EMPLOYMENT_STATUS.UNEMPLOYED;
-
-import ar.edu.itba.pod.census.model.Citizen;
+import ar.edu.itba.pod.census.model.Container;
+import ar.edu.itba.pod.census.model.Province;
+import ar.edu.itba.pod.census.model.Region;
 import com.hazelcast.mapreduce.Context;
 import com.hazelcast.mapreduce.Mapper;
 
-public class RegionOccupationMapper implements Mapper<Long, Citizen, String, Integer> {
+import static ar.edu.itba.pod.census.model.Container.EmploymentStatus.EMPLOYED;
+import static ar.edu.itba.pod.census.model.Container.EmploymentStatus.UNEMPLOYED;
+
+public class RegionOccupationMapper implements Mapper<String, Container, Region, Integer> {
 
   @Override
-  public void map(final Long id, final Citizen citizen, final Context<String, Integer> context) {
-    context.emit(citizen.getRegion(), citizen.getEmploymentStatus() == UNEMPLOYED ? 1 : 0);
+  public void map(final String key, final Container container, final Context<Region, Integer> context) {
+    final Container.EmploymentStatus employmentStatus = Container.EmploymentStatus.valueOf(container.getEmploymentStatusId());
+    final Region region = Province.fromString(container.getProvince()).getRegion();
+    if (employmentStatus == EMPLOYED) {
+      context.emit(region, 0);
+    } else if (employmentStatus == UNEMPLOYED) {
+      context.emit(region, 1);
+    }
   }
 }
