@@ -7,7 +7,6 @@ import ar.edu.itba.pod.census.client.exception.OutputFileErrorException;
 import ar.edu.itba.pod.census.client.exception.QueryFailedException;
 import ar.edu.itba.pod.census.client.query.*;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
-import ar.edu.itba.pod.census.model.Region;
 import com.beust.jcommander.JCommander;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
@@ -16,9 +15,7 @@ import com.hazelcast.core.ICompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 
@@ -107,7 +104,7 @@ public final class Client {
       case CITIZENS_PER_HOME_BY_REGION:
         return new CitizensPerHomeByRegionQuery.Builder();
       case DEPARTMENT_COUNT:
-        return new DepartmentCountQuery.Builder();
+        return new PopularDepartmentNames.Builder();
       case SHARED_DEPARTMENT_COUNT:
         return new SharedDepartmentCountQuery.Builder();
       default:
@@ -133,24 +130,6 @@ public final class Client {
             .setPassword(SharedConfiguration.GROUP_PASSWORD);
 
     return HazelcastClient.newHazelcastClient(clientConfig);
-  }
-
-  private static void handleQuery6(final HazelcastInstance hazelcastClient) throws ArgumentsErrorException {
-    LOGGER.debug("Submitting job...");
-    final ICompletableFuture<List<Entry<String, Integer>>> futureResponse =
-            DepartmentCountQuery.start(hazelcastClient, CLIENT_ARGS.getN());
-    LOGGER.info("Job submitted");
-
-    try {
-      final List<Entry<String, Integer>> response = futureResponse.get();
-      LOGGER.info("Job successful");
-
-      for (final Entry<String, Integer> entry : response) {
-        System.out.println(entry.getKey() + " -> " + entry.getValue());
-      }
-    } catch (final InterruptedException | ExecutionException exception) {
-      LOGGER.error("Job failed", exception);
-    }
   }
 
   private static void handleQuery7(final HazelcastInstance hazelcastClient) throws ArgumentsErrorException {

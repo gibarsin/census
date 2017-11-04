@@ -1,25 +1,16 @@
 package ar.edu.itba.pod.census.client.query;
 
-import ar.edu.itba.pod.census.client.CensusCSVRecords;
 import ar.edu.itba.pod.census.client.CensusCSVRecords.Headers;
 import ar.edu.itba.pod.census.client.args.ClientArgs;
-import ar.edu.itba.pod.census.collator.LimitedSortCollator;
 import ar.edu.itba.pod.census.collator.SortCollator;
-import ar.edu.itba.pod.census.combiner.NoKeyAdderCombinerFactory;
 import ar.edu.itba.pod.census.combiner.RegionOccupationCombinerFactory;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
-import ar.edu.itba.pod.census.mapper.DepartmentPopulationMapper;
 import ar.edu.itba.pod.census.mapper.RegionOccupationMapper;
-import ar.edu.itba.pod.census.model.Citizen;
 import ar.edu.itba.pod.census.model.Container;
 import ar.edu.itba.pod.census.model.Region;
-import ar.edu.itba.pod.census.predicate.RegionOccupationFilter;
-import ar.edu.itba.pod.census.reducer.NoKeyAdderReducerFactory;
 import ar.edu.itba.pod.census.reducer.RegionOccupationReducerFactory;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.ICompletableFuture;
 import com.hazelcast.core.IList;
-import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.*;
 
 import java.io.PrintStream;
@@ -29,17 +20,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import org.apache.commons.csv.CSVRecord;
-
 public final class RegionOccupationQuery extends AbstractQuery {
-  private RegionOccupationQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
-    super(hazelcastInstance, clientArgs);
-  }
-
   private IList<Container> input;
   private ReducingSubmittableJob<String, Region, BigDecimal> mapReducerJob;
   private Collator<Map.Entry<Region, BigDecimal>, List<Map.Entry<Region, BigDecimal>>> collator;
   private List<Map.Entry<Region, BigDecimal>> jobResult;
+
+  private RegionOccupationQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
+    super(hazelcastInstance, clientArgs);
+  }
 
   @Override
   protected void pickAClearClusterCollection(final HazelcastInstance hazelcastInstance) {

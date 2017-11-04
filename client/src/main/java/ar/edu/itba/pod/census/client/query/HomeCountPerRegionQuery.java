@@ -39,7 +39,7 @@ public final class HomeCountPerRegionQuery extends AbstractQuery {
   protected void addRecordToClusterCollection(final String[] csvRecord) {
     input.put(
             Integer.parseInt(csvRecord[Headers.HOME_ID.getColumn()].trim()),
-            csvRecord[Headers.PROVINCE_NAME.getColumn()]
+            csvRecord[Headers.PROVINCE_NAME.getColumn()].trim()
     );
   }
 

@@ -8,6 +8,6 @@ public class HomeCountPerRegionMapper implements Mapper<Integer, String, String,
 
   @Override
   public void map(final Integer homeId, final String province, final Context<String, Integer> context) {
-    context.emit(Province.fromString(province.trim()).getRegion().toString(), 1);
+    context.emit(Province.fromString(province).getRegion().toString(), 1);
   }
 }
