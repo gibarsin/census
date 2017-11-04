@@ -32,8 +32,8 @@ public class Container implements Serializable {
                    final String departmentName, final String province) {
     this.employmentStatusId = employmentStatusId;
     this.homeId = homeId;
-    this.departmentName = departmentName;
-    this.province = province;
+    this.departmentName = departmentName.trim();
+    this.province = province.trim();
   }
 
   public int getEmploymentStatusId() {

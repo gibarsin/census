@@ -15,6 +15,9 @@ public class LimitedSortCollator<K, V> extends SortCollator<K, V> {
 
   @Override
   public List<Entry<K, V>> collate(final Iterable<Entry<K, V>> entries) {
-    return super.collate(entries).subList(0, limit);
+    final List<Entry<K, V>> sortedCollatedList = super.collate(entries);
+    final int realLimit = sortedCollatedList.size();
+    final int maxPossibleLimit = realLimit < limit ? realLimit : limit;
+    return super.collate(entries).subList(0, maxPossibleLimit);
   }
 }

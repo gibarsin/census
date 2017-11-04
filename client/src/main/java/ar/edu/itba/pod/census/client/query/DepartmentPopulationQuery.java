@@ -13,6 +13,7 @@ import com.hazelcast.core.IList;
 import com.hazelcast.mapreduce.*;
 
 import java.io.PrintStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
@@ -62,7 +63,7 @@ public final class DepartmentPopulationQuery extends AbstractQuery {
     // Prepare the collator to post-process the job's result
     // Compiler complains if we do not set this explicitly
     //noinspection Convert2Diamond
-    collator = new LimitedSortCollator<String, Integer>(requiredN, Entry.comparingByValue());
+    collator = new LimitedSortCollator<String, Integer>(requiredN, Collections.reverseOrder(Entry.comparingByValue()));
   }
 
   @Override

@@ -153,23 +153,6 @@ public final class Client {
     }
   }
 
-  private static void handleQuery2(final HazelcastInstance hazelcastClient) throws ArgumentsErrorException {
-    LOGGER.debug("Submitting job...");
-    final ICompletableFuture<List<Entry<String, Integer>>> futureResponse = DepartmentPopulationQuery
-            .start(hazelcastClient, CLIENT_ARGS.getProvince(), CLIENT_ARGS.getN());
-    LOGGER.info("Job submitted");
-
-    try {
-      final List<Entry<String, Integer>> response = futureResponse.get();
-      LOGGER.info("Job successful");
-      for (final Entry<String, Integer> entry : response) {
-        System.out.println(entry.getKey() + " -> " + entry.getValue());
-      }
-    } catch (final InterruptedException | ExecutionException exception) {
-      LOGGER.error("Job failed", exception);
-    }
-  }
-
   private static void handleQuery3(final HazelcastInstance hazelcastClient) {
     LOGGER.debug("Submitting job...");
     final ICompletableFuture<Map<String, BigDecimal>> futureResponse =
