@@ -28,7 +28,7 @@ public final class Client {
 
   private enum Query {
     REGION_POPULATION, DEPARTMENT_POPULATION, REGION_OCCUPATION,
-    HOMES_IN_REGION, CITIZENS_PER_HOME_IN_REGION,
+    HOME_COUNT_PER_REGION, CITIZENS_PER_HOME_BY_REGION,
     DEPARTMENT_COUNT, SHARED_DEPARTMENT_COUNT
   }
 
@@ -40,8 +40,8 @@ public final class Client {
     QUERIES[0] = Query.REGION_POPULATION;
     QUERIES[1] = Query.DEPARTMENT_POPULATION;
     QUERIES[2] = Query.REGION_OCCUPATION;
-    QUERIES[3] = Query.HOMES_IN_REGION;
-    QUERIES[4] = Query.CITIZENS_PER_HOME_IN_REGION;
+    QUERIES[3] = Query.HOME_COUNT_PER_REGION;
+    QUERIES[4] = Query.CITIZENS_PER_HOME_BY_REGION;
     QUERIES[5] = Query.DEPARTMENT_COUNT;
     QUERIES[6] = Query.SHARED_DEPARTMENT_COUNT;
   }
@@ -102,10 +102,10 @@ public final class Client {
         return new DepartmentPopulationQuery.Builder();
       case REGION_OCCUPATION:
         return new RegionOccupationQuery.Builder();
-      case HOMES_IN_REGION:
+      case HOME_COUNT_PER_REGION:
         return new HomeCountPerRegionQuery.Builder();
-      case CITIZENS_PER_HOME_IN_REGION:
-        return new CitizensPerHomeInRegionQuery.Builder();
+      case CITIZENS_PER_HOME_BY_REGION:
+        return new CitizensPerHomeByRegionQuery.Builder();
       case DEPARTMENT_COUNT:
         return new DepartmentCountQuery.Builder();
       case SHARED_DEPARTMENT_COUNT:
@@ -138,7 +138,7 @@ public final class Client {
   private static void handleQuery5(final HazelcastInstance hazelcastClient) {
     LOGGER.debug("Submitting job...");
     final ICompletableFuture<List<Entry<Region, BigDecimal>>> futureResponse =
-            CitizensPerHomeInRegionQuery.start(hazelcastClient);
+            CitizensPerHomeByRegionQuery.start(hazelcastClient);
     LOGGER.info("Job submitted");
 
     try {

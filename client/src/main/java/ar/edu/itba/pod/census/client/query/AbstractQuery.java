@@ -157,6 +157,7 @@ public abstract class AbstractQuery implements IQuery {
    * @param hazelcastInstance The hazelcast instance from where to require the needed cluster collection
    */
   protected abstract void pickAClearClusterCollection(final HazelcastInstance hazelcastInstance);
+  // TODO: pass also the SharedConfiguration.STRUCTURE_NAME variable :D
 
   /**
    * Fill the cluster collection already initialized by the {@code pickAClearClusterCollection} with the given
