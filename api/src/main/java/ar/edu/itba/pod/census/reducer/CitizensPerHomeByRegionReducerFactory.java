@@ -26,7 +26,9 @@ public class CitizensPerHomeByRegionReducerFactory implements ReducerFactory<Reg
 
     @Override
     public void reduce(final Map<Integer, Integer> counterByHomeId) {
-      totalCitizens += counterByHomeId.values().size();
+      for (final Integer counterInHomeId : counterByHomeId.values()) {
+        totalCitizens += counterInHomeId;
+      }
       totalHomes += counterByHomeId.size();
     }
 
@@ -36,8 +38,7 @@ public class CitizensPerHomeByRegionReducerFactory implements ReducerFactory<Reg
       if (totalHomes == 0) {
         result = new BigDecimal(0);
       } else {
-        result = new BigDecimal((double) totalCitizens / totalHomes);
-
+        result = new BigDecimal(((double) totalCitizens) / totalHomes);
       }
       return result.setScale(2, BigDecimal.ROUND_HALF_EVEN);
     }

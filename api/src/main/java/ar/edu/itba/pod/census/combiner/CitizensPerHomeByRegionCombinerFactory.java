@@ -32,7 +32,7 @@ public class CitizensPerHomeByRegionCombinerFactory implements CombinerFactory<R
 
     @Override
     public Map<Integer, Integer> finalizeChunk() {
-      return counterByHomeId;
+      return new HashMap<>(counterByHomeId);
     }
   }
 }
