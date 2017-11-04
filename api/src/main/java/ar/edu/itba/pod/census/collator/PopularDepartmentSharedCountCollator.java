@@ -7,10 +7,10 @@ import java.util.*;
 
 public class PopularDepartmentSharedCountCollator
         implements Collator<Map.Entry<String, Set<ProvincePair>>, List<Map.Entry<String, Integer>>> {
-  private final LimitedSortCollator<String, Integer> limitedSortCollator;
+  private final MinIntegerValueSortCollator<String> collator;
 
   public PopularDepartmentSharedCountCollator(final int requiredN, final Comparator<Map.Entry<String, Integer>> comparator) {
-    limitedSortCollator = new LimitedSortCollator<String, Integer>(requiredN, comparator);
+    collator = new MinIntegerValueSortCollator<String>(requiredN, comparator);
   }
 
   @Override
@@ -31,6 +31,6 @@ public class PopularDepartmentSharedCountCollator
       }
     }
 
-    return limitedSortCollator.collate(resultMap.entrySet());
+    return collator.collate(resultMap.entrySet());
   }
 }
