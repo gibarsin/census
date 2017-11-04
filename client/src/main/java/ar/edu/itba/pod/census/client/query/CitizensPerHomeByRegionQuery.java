@@ -14,6 +14,7 @@ import com.hazelcast.core.IList;
 import com.hazelcast.mapreduce.*;
 
 import java.io.PrintStream;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -23,9 +24,9 @@ import java.util.concurrent.ExecutionException;
 // Intentionally as we are using deprecated Hazelcast features
 public final class CitizensPerHomeByRegionQuery extends AbstractQuery {
   private IList<Container> input;
-  private ReducingSubmittableJob<String, Region, Integer> mapReducerJob;
-  private Collator<Entry<Region, Integer>, List<Entry<Region, Integer>>> collator;
-  private List<Entry<Region, Integer>> jobResult;
+  private ReducingSubmittableJob<String, Region, BigDecimal> mapReducerJob;
+  private Collator<Entry<Region, BigDecimal>, List<Entry<Region, BigDecimal>>> collator;
+  private List<Entry<Region, BigDecimal>> jobResult;
 
   private CitizensPerHomeByRegionQuery(final HazelcastInstance hazelcastInstance, final ClientArgs clientArgs) {
     super(hazelcastInstance, clientArgs);
@@ -40,8 +41,8 @@ public final class CitizensPerHomeByRegionQuery extends AbstractQuery {
   @Override
   protected void addRecordToClusterCollection(final String[] csvRecord) {
     input.add(new Container(-1,
-            Integer.parseInt(csvRecord[Headers.HOME_ID.getColumn()]),
-            null,
+            Integer.parseInt(csvRecord[Headers.HOME_ID.getColumn()].trim()),
+            "",
             csvRecord[Headers.PROVINCE_NAME.getColumn()]
     ));
   }
@@ -60,7 +61,7 @@ public final class CitizensPerHomeByRegionQuery extends AbstractQuery {
     // Prepare the collator to post-process the job's result
     // Compiler complains if we do not set this explicitly
     //noinspection Convert2Diamond
-    collator = new SortCollator<Region, Integer>(Collections.reverseOrder(Entry.comparingByValue()));
+    collator = new SortCollator<Region, BigDecimal>(Collections.reverseOrder(Entry.comparingByValue()));
   }
 
   @Override
