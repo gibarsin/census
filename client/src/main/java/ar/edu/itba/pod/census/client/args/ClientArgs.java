@@ -19,7 +19,8 @@ public final class ClientArgs {
   private static final List<Integer> QUERIES_N = Arrays.asList(2, 6, 7);
   private static final List<Integer> QUERIES_PROVINCE = Collections.singletonList(2);
 
-  @Parameter(names = {"-addresses", "-a"}, required = true)
+  @Parameter(names = {"-addresses", "-a"}, required = true,
+      splitter = SemicolonParameterSplitter.class)
   private List<String> addresses = new ArrayList<>();
 
   @Parameter(names = {"-query", "-q"}, validateWith = QueryArgValidator.class, required = true)
