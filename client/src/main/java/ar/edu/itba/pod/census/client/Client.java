@@ -171,24 +171,6 @@ public final class Client {
     }
   }
 
-  private static void handleQuery4(final HazelcastInstance hazelcastClient) {
-    LOGGER.debug("Submitting job...");
-    final ICompletableFuture<List<Entry<String, Integer>>> futureResponse =
-            HomeCountPerRegionQuery.start(hazelcastClient);
-    LOGGER.info("Job submitted");
-
-    try {
-      final List<Entry<String, Integer>> response = futureResponse.get();
-      LOGGER.info("Job successful");
-
-      for (final Entry<String, Integer> entry : response) {
-        System.out.println(entry.getKey() + " -> " + entry.getValue());
-      }
-    } catch (final InterruptedException | ExecutionException exception) {
-      LOGGER.error("Job failed", exception);
-    }
-  }
-
   private static void handleQuery6(final HazelcastInstance hazelcastClient) throws ArgumentsErrorException {
     LOGGER.debug("Submitting job...");
     final ICompletableFuture<List<Entry<String, Integer>>> futureResponse =
