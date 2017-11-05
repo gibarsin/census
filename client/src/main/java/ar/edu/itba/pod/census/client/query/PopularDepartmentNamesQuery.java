@@ -2,7 +2,6 @@ package ar.edu.itba.pod.census.client.query;
 
 import ar.edu.itba.pod.census.client.CensusCSVRecords.Headers;
 import ar.edu.itba.pod.census.client.args.ClientArgs;
-import ar.edu.itba.pod.census.collator.LimitedSortCollator;
 import ar.edu.itba.pod.census.collator.MinIntegerValueSortCollator;
 import ar.edu.itba.pod.census.combiner.PopularDepartmentCombinerFactory;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
@@ -10,8 +9,11 @@ import ar.edu.itba.pod.census.mapper.PopularDepartmentMapper;
 import ar.edu.itba.pod.census.reducer.PopularDepartmentNamesReducerFactory;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
-import com.hazelcast.mapreduce.*;
-
+import com.hazelcast.mapreduce.Collator;
+import com.hazelcast.mapreduce.Job;
+import com.hazelcast.mapreduce.JobTracker;
+import com.hazelcast.mapreduce.KeyValueSource;
+import com.hazelcast.mapreduce.ReducingSubmittableJob;
 import java.io.PrintStream;
 import java.util.Collections;
 import java.util.List;
@@ -21,7 +23,7 @@ import java.util.concurrent.ExecutionException;
 public final class PopularDepartmentNamesQuery extends AbstractQuery {
   private final int requiredN;
 
-  private MultiMap<String, String> input;
+  private MultiMap<String, String> remoteInput;
   private ReducingSubmittableJob<String, String, Integer> mapReducerJob;
   private Collator<Map.Entry<String, Integer>, List<Map.Entry<String, Integer>>> collator;
   private List<Map.Entry<String, Integer>> jobResult;
@@ -33,20 +35,25 @@ public final class PopularDepartmentNamesQuery extends AbstractQuery {
 
   @Override
   protected void pickAClearClusterCollection(final HazelcastInstance hazelcastInstance) {
-    input = hazelcastInstance.getMultiMap(SharedConfiguration.STRUCTURE_NAME);
-    input.clear();
+    remoteInput = hazelcastInstance.getMultiMap(SharedConfiguration.STRUCTURE_NAME);
+    remoteInput.clear();
   }
 
   @Override
   protected void addRecordToClusterCollection(final String[] csvRecord) {
-    input.put(csvRecord[Headers.DEPARTMENT_NAME.getColumn()].trim(),
+    remoteInput.put(csvRecord[Headers.DEPARTMENT_NAME.getColumn()].trim(),
               csvRecord[Headers.PROVINCE_NAME.getColumn()].trim());
+  }
+
+  @Override
+  protected void submitAllRecordsToCluster() {
+    // Do nothing
   }
 
   @Override
   protected void prepareJobResources(final JobTracker jobTracker) {
     // Create the custom job
-    final KeyValueSource<String, String> source = KeyValueSource.fromMultiMap(input);
+    final KeyValueSource<String, String> source = KeyValueSource.fromMultiMap(remoteInput);
     final Job<String, String> job = jobTracker.newJob(source);
 
     // Prepare the map reduce job to be submitted

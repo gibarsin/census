@@ -22,7 +22,7 @@ import java.util.concurrent.ExecutionException;
 public final class PopularDepartmentSharedCountQuery extends AbstractQuery {
   private final int requiredN;
 
-  private MultiMap<String, String> input;
+  private MultiMap<String, String> remoteInput;
   private ReducingSubmittableJob<String, String, Set<ProvincePair>> mapReducerJob;
   private Collator<Map.Entry<String, Set<ProvincePair>>, List<Map.Entry<String, Integer>>> collator;
   private List<Map.Entry<String, Integer>> jobResult;
@@ -34,20 +34,25 @@ public final class PopularDepartmentSharedCountQuery extends AbstractQuery {
 
   @Override
   protected void pickAClearClusterCollection(final HazelcastInstance hazelcastInstance) {
-    input = hazelcastInstance.getMultiMap(SharedConfiguration.STRUCTURE_NAME);
-    input.clear();
+    remoteInput = hazelcastInstance.getMultiMap(SharedConfiguration.STRUCTURE_NAME);
+    remoteInput.clear();
   }
 
   @Override
   protected void addRecordToClusterCollection(final String[] csvRecord) {
-    input.put(csvRecord[Headers.DEPARTMENT_NAME.getColumn()].trim(),
+    remoteInput.put(csvRecord[Headers.DEPARTMENT_NAME.getColumn()].trim(),
             csvRecord[Headers.PROVINCE_NAME.getColumn()].trim());
+  }
+
+  @Override
+  protected void submitAllRecordsToCluster() {
+    // Do nothing
   }
 
   @Override
   protected void prepareJobResources(final JobTracker jobTracker) {
     // Create the custom job
-    final KeyValueSource<String, String> source = KeyValueSource.fromMultiMap(input);
+    final KeyValueSource<String, String> source = KeyValueSource.fromMultiMap(remoteInput);
     final Job<String, String> job = jobTracker.newJob(source);
 
     // Prepare the map reduce job to be submitted

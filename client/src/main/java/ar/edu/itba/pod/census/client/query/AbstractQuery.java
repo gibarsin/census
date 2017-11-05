@@ -149,9 +149,7 @@ public abstract class AbstractQuery implements IQuery {
     logger.debug("Tiempo de lectura entre ambos logs (aproximadamente): {} ms.", end - start);
   }
 
-  protected void submitAllRecordsToCluster() {
-    // TODO: tmp
-  }
+  protected abstract void submitAllRecordsToCluster();
 
   /**
    * Pick the needed cluster collection from the given {@code hazelcastInstance}.
