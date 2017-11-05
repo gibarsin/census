@@ -9,12 +9,12 @@ import ar.edu.itba.pod.census.mapper.PopularDepartmentMapper;
 import ar.edu.itba.pod.census.model.Container;
 import ar.edu.itba.pod.census.reducer.PopularDepartmentNamesReducerFactory;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IList;
+import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.*;
 
 import java.io.PrintStream;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -24,9 +24,10 @@ import java.util.concurrent.ExecutionException;
 public final class PopularDepartmentNamesQuery extends AbstractQuery {
   private final int requiredN;
 
-  private List<Container> localInput;
-  private IList<Container> remoteInput;
-  private ReducingSubmittableJob<String, String, Integer> mapReducerJob;
+  private int key;
+  private Map<Integer, Container> localInput;
+  private IMap<Integer, Container> remoteInput;
+  private ReducingSubmittableJob<Integer, String, Integer> mapReducerJob;
   private Collator<Map.Entry<String, Integer>, List<Map.Entry<String, Integer>>> collator;
   private List<Map.Entry<String, Integer>> jobResult;
 
@@ -37,14 +38,15 @@ public final class PopularDepartmentNamesQuery extends AbstractQuery {
 
   @Override
   protected void pickAClearClusterCollection(final HazelcastInstance hazelcastInstance) {
-    localInput = new LinkedList<>();
-    remoteInput = hazelcastInstance.getList(SharedConfiguration.STRUCTURE_NAME);
+    localInput = new HashMap<>();
+    key = 0;
+    remoteInput = hazelcastInstance.getMap(SharedConfiguration.STRUCTURE_NAME);
     remoteInput.clear();
   }
 
   @Override
   protected void addRecordToClusterCollection(final String[] csvRecord) {
-    localInput.add(new Container(
+    localInput.put(key ++, new Container(
               -1,
               -1,
               csvRecord[Headers.DEPARTMENT_NAME.getColumn()].trim(),
@@ -54,14 +56,14 @@ public final class PopularDepartmentNamesQuery extends AbstractQuery {
 
   @Override
   protected void submitAllRecordsToCluster() {
-    remoteInput.addAll(localInput);
+    remoteInput.putAll(localInput);
   }
 
   @Override
   protected void prepareJobResources(final JobTracker jobTracker) {
     // Create the custom job
-    final KeyValueSource<String, Container> source = KeyValueSource.fromList(remoteInput);
-    final Job<String, Container> job = jobTracker.newJob(source);
+    final KeyValueSource<Integer, Container> source = KeyValueSource.fromMap(remoteInput);
+    final Job<Integer, Container> job = jobTracker.newJob(source);
 
     // Prepare the map reduce job to be submitted
     mapReducerJob = job.mapper(new PopularDepartmentMapper())
