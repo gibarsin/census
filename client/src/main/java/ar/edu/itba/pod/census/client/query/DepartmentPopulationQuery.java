@@ -9,13 +9,14 @@ import ar.edu.itba.pod.census.mapper.DepartmentPopulationMapper;
 import ar.edu.itba.pod.census.model.Container;
 import ar.edu.itba.pod.census.reducer.NoKeyAdderReducerFactory;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IList;
+import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.*;
 
 import java.io.PrintStream;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 
@@ -25,9 +26,10 @@ public final class DepartmentPopulationQuery extends AbstractQuery {
   private final int requiredN;
   private final String requiredProvince;
 
-  private final List<Container> localInput = new LinkedList<>();
-  private IList<Container> remoteInput;
-  private ReducingSubmittableJob<String, String, Integer> mapReducerJob;
+  private int key;
+  private Map<Integer, Container> localInput;
+  private IMap<Integer, Container> remoteInput;
+  private ReducingSubmittableJob<Integer, String, Integer> mapReducerJob;
   private Collator<Entry<String, Integer>, List<Entry<String, Integer>>> collator;
   private List<Entry<String, Integer>> jobResult;
 
@@ -39,13 +41,15 @@ public final class DepartmentPopulationQuery extends AbstractQuery {
 
   @Override
   protected void pickAClearClusterCollection(final HazelcastInstance hazelcastInstance) {
-    remoteInput = hazelcastInstance.getList(SharedConfiguration.STRUCTURE_NAME);
+    localInput = new HashMap<>();
+    key = 0;
+    remoteInput = hazelcastInstance.getMap(SharedConfiguration.STRUCTURE_NAME);
     remoteInput.clear();
   }
 
   @Override
   protected void addRecordToClusterCollection(final String[] csvRecord) {
-    localInput.add(new Container(-1,-1,
+    localInput.put(key ++, new Container(-1,-1,
             csvRecord[CensusCSVRecords.Headers.DEPARTMENT_NAME.getColumn()],
             csvRecord[CensusCSVRecords.Headers.PROVINCE_NAME.getColumn()]
     ));
@@ -53,14 +57,14 @@ public final class DepartmentPopulationQuery extends AbstractQuery {
 
   @Override
   protected void submitAllRecordsToCluster() {
-    remoteInput.addAll(localInput);
+    remoteInput.putAll(localInput);
   }
 
   @Override
   protected void prepareJobResources(final JobTracker jobTracker) {
     // Create the custom job
-    final KeyValueSource<String, Container> source = KeyValueSource.fromList(remoteInput);
-    final Job<String, Container> job = jobTracker.newJob(source);
+    final KeyValueSource<Integer, Container> source = KeyValueSource.fromMap(remoteInput);
+    final Job<Integer, Container> job = jobTracker.newJob(source);
 
     // Prepare the map reduce job to be submitted
     mapReducerJob = job.mapper(new DepartmentPopulationMapper(requiredProvince))
