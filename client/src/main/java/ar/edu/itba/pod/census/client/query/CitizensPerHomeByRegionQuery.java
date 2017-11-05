@@ -16,6 +16,7 @@ import com.hazelcast.mapreduce.*;
 import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
@@ -23,7 +24,9 @@ import java.util.concurrent.ExecutionException;
 @SuppressWarnings("deprecation")
 // Intentionally as we are using deprecated Hazelcast features
 public final class CitizensPerHomeByRegionQuery extends AbstractQuery {
-  private IList<Container> input;
+
+  private final List<Container> localInput = new LinkedList<>();
+  private IList<Container> remoteInput;
   private ReducingSubmittableJob<String, Region, BigDecimal> mapReducerJob;
   private Collator<Entry<Region, BigDecimal>, List<Entry<Region, BigDecimal>>> collator;
   private List<Entry<Region, BigDecimal>> jobResult;
@@ -34,13 +37,13 @@ public final class CitizensPerHomeByRegionQuery extends AbstractQuery {
 
   @Override
   protected void pickAClearClusterCollection(final HazelcastInstance hazelcastInstance) {
-    input = hazelcastInstance.getList(SharedConfiguration.STRUCTURE_NAME);
-    input.clear();
+    remoteInput = hazelcastInstance.getList(SharedConfiguration.STRUCTURE_NAME);
+    remoteInput.clear();
   }
 
   @Override
   protected void addRecordToClusterCollection(final String[] csvRecord) {
-    input.add(new Container(-1,
+    localInput.add(new Container(-1,
             Integer.parseInt(csvRecord[Headers.HOME_ID.getColumn()].trim()),
             "",
             csvRecord[Headers.PROVINCE_NAME.getColumn()]
@@ -48,9 +51,14 @@ public final class CitizensPerHomeByRegionQuery extends AbstractQuery {
   }
 
   @Override
+  protected void submitAllRecordsToCluster() {
+    remoteInput.addAll(localInput);
+  }
+
+  @Override
   protected void prepareJobResources(final JobTracker jobTracker) {
     // Create the custom job
-    final KeyValueSource<String, Container> source = KeyValueSource.fromList(input);
+    final KeyValueSource<String, Container> source = KeyValueSource.fromList(remoteInput);
     final Job<String, Container> job = jobTracker.newJob(source);
 
     // Prepare the map reduce job to be submitted

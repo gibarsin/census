@@ -5,26 +5,14 @@ import ar.edu.itba.pod.census.client.exception.ArgumentsErrorException;
 import ar.edu.itba.pod.census.client.exception.InputFileErrorException;
 import ar.edu.itba.pod.census.client.exception.OutputFileErrorException;
 import ar.edu.itba.pod.census.client.exception.QueryFailedException;
-import ar.edu.itba.pod.census.client.query.AbstractQuery;
-import ar.edu.itba.pod.census.client.query.CitizensPerHomeByRegionQuery;
-import ar.edu.itba.pod.census.client.query.DepartmentPopulationQuery;
-import ar.edu.itba.pod.census.client.query.HomeCountPerRegionQuery;
-import ar.edu.itba.pod.census.client.query.IQuery;
-import ar.edu.itba.pod.census.client.query.PopularDepartmentNamesQuery;
-import ar.edu.itba.pod.census.client.query.PopularDepartmentSharedCountQuery;
-import ar.edu.itba.pod.census.client.query.RegionOccupationQuery;
-import ar.edu.itba.pod.census.client.query.RegionPopulationQuery;
+import ar.edu.itba.pod.census.client.query.*;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
 import com.beust.jcommander.JCommander;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.core.HazelcastInstance;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public final class Client {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(Client.class); // TODO: remove
   private static final ClientArgs CLIENT_ARGS = ClientArgs.getInstance();
 
   private enum Query {

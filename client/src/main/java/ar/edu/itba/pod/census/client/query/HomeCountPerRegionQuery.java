@@ -13,14 +13,18 @@ import com.hazelcast.mapreduce.*;
 
 import java.io.PrintStream;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 
 @SuppressWarnings("deprecation")
 // Intentionally as we are using deprecated Hazelcast features
 public final class HomeCountPerRegionQuery extends AbstractQuery {
-  private IMap<Integer, String> input;
+
+  private final Map<Integer, String> localInput = new HashMap<>();
+  private IMap<Integer, String> remoteInput;
   private ReducingSubmittableJob<Integer, String, Integer> mapReducerJob;
   private Collator<Entry<String, Integer>, List<Entry<String, Integer>>> collator;
   private List<Entry<String, Integer>> jobResult;
@@ -31,22 +35,27 @@ public final class HomeCountPerRegionQuery extends AbstractQuery {
 
   @Override
   protected void pickAClearClusterCollection(final HazelcastInstance hazelcastInstance) {
-    input = hazelcastInstance.getMap(SharedConfiguration.STRUCTURE_NAME);
-    input.clear();
+    remoteInput = hazelcastInstance.getMap(SharedConfiguration.STRUCTURE_NAME);
+    remoteInput.clear();
   }
 
   @Override
   protected void addRecordToClusterCollection(final String[] csvRecord) {
-    input.put(
+    localInput.put(
             Integer.parseInt(csvRecord[Headers.HOME_ID.getColumn()].trim()),
             csvRecord[Headers.PROVINCE_NAME.getColumn()].trim()
     );
   }
 
   @Override
+  protected void submitAllRecordsToCluster() {
+    remoteInput.putAll(localInput);
+  }
+
+  @Override
   protected void prepareJobResources(final JobTracker jobTracker) {
     // Create the custom job
-    final KeyValueSource<Integer, String> source = KeyValueSource.fromMap(input);
+    final KeyValueSource<Integer, String> source = KeyValueSource.fromMap(remoteInput);
     final Job<Integer, String> job = jobTracker.newJob(source);
 
     // Prepare the map reduce job to be submitted

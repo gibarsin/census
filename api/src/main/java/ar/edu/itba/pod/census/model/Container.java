@@ -76,6 +76,7 @@ public class Container implements IdentifiedDataSerializable {
     if (homeId != container.homeId) {
       return false;
     }
+    //noinspection SimplifiableIfStatement
     if (departmentName != null ? !departmentName.equals(container.departmentName)
         : container.departmentName != null) {
       return false;
