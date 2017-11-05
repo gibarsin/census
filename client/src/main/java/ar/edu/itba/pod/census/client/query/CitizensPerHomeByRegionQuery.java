@@ -10,14 +10,15 @@ import ar.edu.itba.pod.census.model.Container;
 import ar.edu.itba.pod.census.model.Region;
 import ar.edu.itba.pod.census.reducer.CitizensPerHomeByRegionReducerFactory;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IList;
+import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.*;
 
 import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 
@@ -25,9 +26,10 @@ import java.util.concurrent.ExecutionException;
 // Intentionally as we are using deprecated Hazelcast features
 public final class CitizensPerHomeByRegionQuery extends AbstractQuery {
 
-  private final List<Container> localInput = new LinkedList<>();
-  private IList<Container> remoteInput;
-  private ReducingSubmittableJob<String, Region, BigDecimal> mapReducerJob;
+  private int key;
+  private final Map<Integer, Container> localInput = new HashMap<>();
+  private IMap<Integer, Container> remoteInput;
+  private ReducingSubmittableJob<Integer, Region, BigDecimal> mapReducerJob;
   private Collator<Entry<Region, BigDecimal>, List<Entry<Region, BigDecimal>>> collator;
   private List<Entry<Region, BigDecimal>> jobResult;
 
@@ -37,13 +39,13 @@ public final class CitizensPerHomeByRegionQuery extends AbstractQuery {
 
   @Override
   protected void pickAClearClusterCollection(final HazelcastInstance hazelcastInstance) {
-    remoteInput = hazelcastInstance.getList(SharedConfiguration.STRUCTURE_NAME);
+    remoteInput = hazelcastInstance.getMap(SharedConfiguration.STRUCTURE_NAME);
     remoteInput.clear();
   }
 
   @Override
   protected void addRecordToClusterCollection(final String[] csvRecord) {
-    localInput.add(new Container(-1,
+    localInput.put(key ++, new Container(-1,
             Integer.parseInt(csvRecord[Headers.HOME_ID.getColumn()].trim()),
             "",
             csvRecord[Headers.PROVINCE_NAME.getColumn()]
@@ -52,14 +54,14 @@ public final class CitizensPerHomeByRegionQuery extends AbstractQuery {
 
   @Override
   protected void submitAllRecordsToCluster() {
-    remoteInput.addAll(localInput);
+    remoteInput.putAll(localInput);
   }
 
   @Override
   protected void prepareJobResources(final JobTracker jobTracker) {
     // Create the custom job
-    final KeyValueSource<String, Container> source = KeyValueSource.fromList(remoteInput);
-    final Job<String, Container> job = jobTracker.newJob(source);
+    final KeyValueSource<Integer, Container> source = KeyValueSource.fromMap(remoteInput);
+    final Job<Integer, Container> job = jobTracker.newJob(source);
 
     // Prepare the map reduce job to be submitted
     mapReducerJob = job.mapper(new CitizensPerHomeByRegionMapper())
