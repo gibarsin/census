@@ -10,22 +10,25 @@ import ar.edu.itba.pod.census.model.Container;
 import ar.edu.itba.pod.census.model.Region;
 import ar.edu.itba.pod.census.reducer.RegionOccupationReducerFactory;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IList;
+import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.*;
 
 import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+@SuppressWarnings("deprecation")
+// Intentionally as we are using deprecated Hazelcast features
 public final class RegionOccupationQuery extends AbstractQuery {
 
-  private final List<Container> localInput = new LinkedList<>();
-  private IList<Container> remoteInput;
-  private ReducingSubmittableJob<String, Region, BigDecimal> mapReducerJob;
+  private int key;
+  private Map<Integer, Container> localInput;
+  private IMap<Integer, Container> remoteInput;
+  private ReducingSubmittableJob<Integer, Region, BigDecimal> mapReducerJob;
   private Collator<Map.Entry<Region, BigDecimal>, List<Map.Entry<Region, BigDecimal>>> collator;
   private List<Map.Entry<Region, BigDecimal>> jobResult;
 
@@ -35,13 +38,15 @@ public final class RegionOccupationQuery extends AbstractQuery {
 
   @Override
   protected void pickAClearClusterCollection(final HazelcastInstance hazelcastInstance) {
-    remoteInput = hazelcastInstance.getList(SharedConfiguration.STRUCTURE_NAME);
+    localInput = new HashMap<>();
+    key = 0;
+    remoteInput = hazelcastInstance.getMap(SharedConfiguration.STRUCTURE_NAME);
     remoteInput.clear();
   }
 
   @Override
   protected void addRecordToClusterCollection(final String[] csvRecord) {
-    localInput.add(new Container(
+    localInput.put(key ++, new Container(
             Integer.parseInt(csvRecord[Headers.EMPLOYMENT_STATUS.getColumn()].trim()),
             -1,
             "",
@@ -51,14 +56,14 @@ public final class RegionOccupationQuery extends AbstractQuery {
 
   @Override
   protected void submitAllRecordsToCluster() {
-    remoteInput.addAll(localInput);
+    remoteInput.putAll(localInput);
   }
 
   @Override
   protected void prepareJobResources(final JobTracker jobTracker) {
     // Create the custom job
-    final KeyValueSource<String, Container> source = KeyValueSource.fromList(remoteInput);
-    final Job<String, Container> job = jobTracker.newJob(source);
+    final KeyValueSource<Integer, Container> source = KeyValueSource.fromMap(remoteInput);
+    final Job<Integer, Container> job = jobTracker.newJob(source);
 
     // Prepare the map reduce job to be submitted
     mapReducerJob = job.mapper(new RegionOccupationMapper())

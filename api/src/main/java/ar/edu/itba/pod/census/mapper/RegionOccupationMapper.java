@@ -9,10 +9,10 @@ import com.hazelcast.mapreduce.Mapper;
 import static ar.edu.itba.pod.census.model.Container.EmploymentStatus.EMPLOYED;
 import static ar.edu.itba.pod.census.model.Container.EmploymentStatus.UNEMPLOYED;
 
-public class RegionOccupationMapper implements Mapper<String, Container, Region, Integer> {
+public class RegionOccupationMapper implements Mapper<Integer, Container, Region, Integer> {
 
   @Override
-  public void map(final String key, final Container container, final Context<Region, Integer> context) {
+  public void map(final Integer key, final Container container, final Context<Region, Integer> context) {
     final Container.EmploymentStatus employmentStatus = Container.EmploymentStatus.valueOf(container.getEmploymentStatusId());
     final Region region = Province.fromString(container.getProvince()).getRegion();
     if (employmentStatus == EMPLOYED) {
