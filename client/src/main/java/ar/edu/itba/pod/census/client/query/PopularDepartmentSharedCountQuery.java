@@ -6,23 +6,24 @@ import ar.edu.itba.pod.census.collator.PopularDepartmentSharedCountCollator;
 import ar.edu.itba.pod.census.combiner.PopularDepartmentCombinerFactory;
 import ar.edu.itba.pod.census.config.SharedConfiguration;
 import ar.edu.itba.pod.census.mapper.PopularDepartmentMapper;
+import ar.edu.itba.pod.census.model.Container;
 import ar.edu.itba.pod.census.model.ProvincePair;
 import ar.edu.itba.pod.census.reducer.PopularDepartmentSharedReducerFactory;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.MultiMap;
+import com.hazelcast.core.IList;
 import com.hazelcast.mapreduce.*;
 
 import java.io.PrintStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
+@SuppressWarnings("deprecation")
+// Intentionally as we are using deprecated Hazelcast features
 public final class PopularDepartmentSharedCountQuery extends AbstractQuery {
   private final int requiredN;
 
-  private MultiMap<String, String> remoteInput;
+  private List<Container> localInput;
+  private IList<Container> remoteInput;
   private ReducingSubmittableJob<String, String, Set<ProvincePair>> mapReducerJob;
   private Collator<Map.Entry<String, Set<ProvincePair>>, List<Map.Entry<String, Integer>>> collator;
   private List<Map.Entry<String, Integer>> jobResult;
@@ -34,26 +35,31 @@ public final class PopularDepartmentSharedCountQuery extends AbstractQuery {
 
   @Override
   protected void pickAClearClusterCollection(final HazelcastInstance hazelcastInstance) {
-    remoteInput = hazelcastInstance.getMultiMap(SharedConfiguration.STRUCTURE_NAME);
+    localInput = new LinkedList<>();
+    remoteInput = hazelcastInstance.getList(SharedConfiguration.STRUCTURE_NAME);
     remoteInput.clear();
   }
 
   @Override
   protected void addRecordToClusterCollection(final String[] csvRecord) {
-    remoteInput.put(csvRecord[Headers.DEPARTMENT_NAME.getColumn()].trim(),
-            csvRecord[Headers.PROVINCE_NAME.getColumn()].trim());
+    localInput.add(new Container(
+            -1,
+            -1,
+            csvRecord[Headers.DEPARTMENT_NAME.getColumn()].trim(),
+            csvRecord[Headers.PROVINCE_NAME.getColumn()].trim()
+    ));
   }
 
   @Override
   protected void submitAllRecordsToCluster() {
-    // Do nothing
+    remoteInput.addAll(localInput);
   }
 
   @Override
   protected void prepareJobResources(final JobTracker jobTracker) {
     // Create the custom job
-    final KeyValueSource<String, String> source = KeyValueSource.fromMultiMap(remoteInput);
-    final Job<String, String> job = jobTracker.newJob(source);
+    final KeyValueSource<String, Container> source = KeyValueSource.fromList(remoteInput);
+    final Job<String, Container> job = jobTracker.newJob(source);
 
     // Prepare the map reduce job to be submitted
     mapReducerJob = job.mapper(new PopularDepartmentMapper())
