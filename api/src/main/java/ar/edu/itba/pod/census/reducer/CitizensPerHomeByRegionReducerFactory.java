@@ -17,8 +17,6 @@ public class CitizensPerHomeByRegionReducerFactory implements ReducerFactory<Reg
 
   private static class CitizensPerHomeByRegionReducer extends Reducer<Map<Integer, Integer>, BigDecimal> {
     private final Map<Integer, Integer> localCounterByHomeId;
-    private int totalCitizens;
-    private int totalHomes;
 
     private CitizensPerHomeByRegionReducer() {
       localCounterByHomeId = new HashMap<>();
@@ -27,8 +25,6 @@ public class CitizensPerHomeByRegionReducerFactory implements ReducerFactory<Reg
     @Override
     public void beginReduce() {
       localCounterByHomeId.clear();
-      totalCitizens = 0;
-      totalHomes = 0;
     }
 
     @Override
@@ -40,6 +36,9 @@ public class CitizensPerHomeByRegionReducerFactory implements ReducerFactory<Reg
 
     @Override
     public BigDecimal finalizeReduce() {
+      int totalCitizens = 0;
+      int totalHomes = 0;
+
       for (Map.Entry<Integer, Integer> entry : localCounterByHomeId.entrySet()) {
         totalCitizens += entry.getValue();
         totalHomes ++;
