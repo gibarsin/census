@@ -15,14 +15,25 @@ You can also update the `hazelcast.xml` file located at the server's unpacked di
 ## Usage
 
 ### Clean
-To clean all related stuff (including maven resources), just run from the project's root folder
+To clean all related stuff (including maven resources), just run from the project's root directory
 
     $ ./clean-all
 
-### Run
-The run script is in charge of compiling the project sources (if they are not already compiled), unpacking them (if they are not already unpacked), moving them to a folder in `$HOME/census-server` or `$HOME/census-client` (depending on the param specified to the `run` command) and running the specified side (`server` or `client`, also based on the given parameter).
+To clean only the `server` or the `client` resources (i.e., the `$HOME/census-server` or `$HOME/census-client` directory created by the `run` script), just run from the project's root directory
 
-Please note that both `server` and `client` will run locally to the created folder in the `$HOME` directory, so all specified paths will be relative to that folder (take this into account when specifying `client`'s arguments).
+    $ ./clean server
+    
+or
+
+    $ ./clean client
+    
+    
+**Note that the `client` script does not clean maven resources (i.e., `mvn clean` is never called).**  
+
+### Run
+The run script is in charge of compiling the project sources (if they are not already compiled), unpacking them (if they are not already unpacked), moving them to a directory in `$HOME/census-server` or `$HOME/census-client` (depending on the param specified to the `run` command) and running the specified side (`server` or `client`, also based on the given parameter).
+
+Please note that both `server` and `client` will run locally to the created directory in the `$HOME` directory, so all specified paths will be relative to that directory (take this into account when specifying `client`'s arguments).
 
 **Please also note that both relative and absolute paths may be specified, but they should not contain shell or environmental variables.**
 
@@ -31,7 +42,7 @@ So, for example, instead of specifying as a `client` argument `-DinPath=$HOME/De
 **If you want to recompile and redistribute the code, just call `./clean-all` and then run the `server` or `client` depending on your needs.**
 
 ### Server
-To run a server node, just execute from the project's root folder
+To run a server node, just execute from the project's root directory
 
     $ ./run server
 
@@ -40,7 +51,7 @@ For running a node server directly from the unpacked compiled sources directory 
     $ ./run-server.sh
 
 ### Client
-To run a client, just execute from the project's root folder
+To run a client, just execute from the project's root directory
 
     $ ./run client <program-args>
     
