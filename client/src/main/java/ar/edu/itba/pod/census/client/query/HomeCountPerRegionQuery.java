@@ -1,6 +1,6 @@
 package ar.edu.itba.pod.census.client.query;
 
-import ar.edu.itba.pod.census.client.CensusCSVRecords.Headers;
+import ar.edu.itba.pod.census.client.CSVHeaders;
 import ar.edu.itba.pod.census.client.args.ClientArgs;
 import ar.edu.itba.pod.census.collator.SortCollator;
 import ar.edu.itba.pod.census.combiner.NoKeyAdderCombinerFactory;
@@ -42,8 +42,8 @@ public final class HomeCountPerRegionQuery extends AbstractQuery {
   @Override
   protected void addRecordToClusterCollection(final String[] csvRecord) {
     localInput.put(
-            Integer.parseInt(csvRecord[Headers.HOME_ID.getColumn()].trim()),
-            csvRecord[Headers.PROVINCE_NAME.getColumn()].trim()
+            Integer.parseInt(csvRecord[CSVHeaders.HOME_ID.getColumn()].trim()),
+            csvRecord[CSVHeaders.PROVINCE_NAME.getColumn()].trim()
     );
   }
 

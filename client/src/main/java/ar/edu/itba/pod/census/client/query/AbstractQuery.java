@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutionException;
 
 // Intentionally as we are using deprecated Hazelcast features
 @SuppressWarnings("deprecation")
-public abstract class AbstractQuery implements IQuery {
+public abstract class AbstractQuery implements Query {
   private static final String CSV_SPLITTER = ",";
   private final HazelcastInstance hazelcastInstance;
   private final String inPath;

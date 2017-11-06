@@ -25,16 +25,16 @@ public final class Client {
    * Queries index is offset by 1 to the left (i.e., query 1 is index 0, query 2 index 1 and so
    * on...)
    */
-  private static final Query[] QUERIES = new Query[Query.values().length];
+  private static final Query[] QUERIES = new Query[Client.Query.values().length];
 
   static {
-    QUERIES[0] = Query.REGION_POPULATION;
-    QUERIES[1] = Query.DEPARTMENT_POPULATION;
-    QUERIES[2] = Query.REGION_OCCUPATION;
-    QUERIES[3] = Query.HOME_COUNT_PER_REGION;
-    QUERIES[4] = Query.CITIZENS_PER_HOME_BY_REGION;
-    QUERIES[5] = Query.DEPARTMENT_COUNT;
-    QUERIES[6] = Query.SHARED_DEPARTMENT_COUNT;
+    QUERIES[0] = Client.Query.REGION_POPULATION;
+    QUERIES[1] = Client.Query.DEPARTMENT_POPULATION;
+    QUERIES[2] = Client.Query.REGION_OCCUPATION;
+    QUERIES[3] = Client.Query.HOME_COUNT_PER_REGION;
+    QUERIES[4] = Client.Query.CITIZENS_PER_HOME_BY_REGION;
+    QUERIES[5] = Client.Query.DEPARTMENT_COUNT;
+    QUERIES[6] = Client.Query.SHARED_DEPARTMENT_COUNT;
   }
 
   private enum ExitStatus {
@@ -58,7 +58,7 @@ public final class Client {
     final HazelcastInstance hazelcastInstance = createHazelcastClient();
 
     try {
-      final IQuery query = buildQuery(hazelcastInstance, CLIENT_ARGS);
+      final ar.edu.itba.pod.census.client.query.Query query = buildQuery(hazelcastInstance, CLIENT_ARGS);
       query.run();
     } catch (final ArgumentsErrorException e) {
       System.err.println(e.getMessage());
@@ -80,8 +80,8 @@ public final class Client {
     System.exit(exitStatus.getStatus());
   }
 
-  private static IQuery buildQuery(final HazelcastInstance hazelcastInstance,
-      final ClientArgs clientArgs)
+  private static ar.edu.itba.pod.census.client.query.Query buildQuery(final HazelcastInstance hazelcastInstance,
+                                                                      final ClientArgs clientArgs)
       throws ArgumentsErrorException { // TODO: Add arguments validation on build
     final AbstractQuery.Builder builder = getBuilderForQuery(QUERIES[clientArgs.getQuery() - 1]);
     return builder.setHazelcastInstance(hazelcastInstance).setClientArgs(clientArgs).build();

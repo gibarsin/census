@@ -1,6 +1,6 @@
 package ar.edu.itba.pod.census.client.query;
 
-import ar.edu.itba.pod.census.client.CensusCSVRecords.Headers;
+import ar.edu.itba.pod.census.client.CSVHeaders;
 import ar.edu.itba.pod.census.client.args.ClientArgs;
 import ar.edu.itba.pod.census.collator.MinIntegerValueSortCollator;
 import ar.edu.itba.pod.census.combiner.PopularDepartmentCombinerFactory;
@@ -49,8 +49,8 @@ public final class PopularDepartmentNamesQuery extends AbstractQuery {
     localInput.put(key ++, new Container(
               -1,
               -1,
-              csvRecord[Headers.DEPARTMENT_NAME.getColumn()].trim(),
-              csvRecord[Headers.PROVINCE_NAME.getColumn()].trim()
+              csvRecord[CSVHeaders.DEPARTMENT_NAME.getColumn()].trim(),
+              csvRecord[CSVHeaders.PROVINCE_NAME.getColumn()].trim()
     ));
   }
 

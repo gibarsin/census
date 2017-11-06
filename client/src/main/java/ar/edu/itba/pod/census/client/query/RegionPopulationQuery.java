@@ -1,6 +1,6 @@
 package ar.edu.itba.pod.census.client.query;
 
-import ar.edu.itba.pod.census.client.CensusCSVRecords.Headers;
+import ar.edu.itba.pod.census.client.CSVHeaders;
 import ar.edu.itba.pod.census.client.args.ClientArgs;
 import ar.edu.itba.pod.census.collator.SortCollator;
 import ar.edu.itba.pod.census.combiner.NoKeyAdderCombinerFactory;
@@ -44,7 +44,7 @@ public final class RegionPopulationQuery extends AbstractQuery {
 
   @Override
   protected void addRecordToClusterCollection(final String[] csvRecord) {
-    localInput.put(key ++, csvRecord[Headers.PROVINCE_NAME.getColumn()]);
+    localInput.put(key ++, csvRecord[CSVHeaders.PROVINCE_NAME.getColumn()]);
   }
 
   @Override
