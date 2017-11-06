@@ -18,10 +18,10 @@ public class CustomArgsValidator {
     validateProvince(query, clientArgs.getProvince());
   }
 
-  private static void validateN(final int query, final int n) {
-    if (QUERIES_THAT_REQUIRE_N.contains(query) && n <= 0) {
+  private static void validateN(final int query, final Integer n) {
+    if (QUERIES_THAT_REQUIRE_N.contains(query) && (n == null || n <= 0)) {
       throw new ParameterException("N should be defined and greater than 0 for this query");
-    } else if (!QUERIES_THAT_REQUIRE_N.contains(query) && n > 0) {
+    } else if (!QUERIES_THAT_REQUIRE_N.contains(query) && n != null) {
       throw new ParameterException("N should be undefined for this query");
     }
   }

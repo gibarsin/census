@@ -2,10 +2,9 @@ package ar.edu.itba.pod.census.client.args;
 
 import com.beust.jcommander.IDefaultProvider;
 import com.beust.jcommander.Parameter;
+
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 @SuppressWarnings({"UnusedDeclaration"}) // JCommander populates all the private fields
 public final class ClientArgs {
@@ -67,16 +66,11 @@ public final class ClientArgs {
     return timeOutPath;
   }
 
-  public int getN() {
+  public Integer getN() {
     return n;
   }
 
   public String getProvince() {
-    // TODO: move this validation to somewhere else; build() method perhaps?
-//    if (!QUERIES_PROVINCE.contains(query)) {
-//      throw new ArgumentsErrorException("Province is undefined for this query");
-//    }
-
     return province;
   }
 

@@ -133,15 +133,20 @@ public abstract class AbstractQuery implements Query {
     final long start = System.currentTimeMillis();
     // Load time includes both the file load and the cluster collection load
     logger.info("Inicio de la lectura del archivo");
+    int lineIndex = 1;
     try (BufferedReader br = new BufferedReader(new FileReader(inPath))) {
       String line;
       while ((line = br.readLine()) != null) {
         addRecordToClusterCollection(line.split(CSV_SPLITTER));
+        lineIndex ++;
       }
       submitAllRecordsToCluster();
     } catch (final IOException exception) {
       logger.error("Could not open/read input file", exception);
       throw new InputFileErrorException("There was an error while trying to open/read the input file");
+    } catch (final ArrayIndexOutOfBoundsException exception) {
+      logger.error("Line {} has illegal format or is empty", lineIndex, exception);
+      throw new InputFileErrorException("Line " + lineIndex + " has illegal format or is empty");
     }
     logger.info("Fin de lectura del archivo");
     // IMPORTANT: Following the log so as not to affect the logging time (which is the one considered by professors)
