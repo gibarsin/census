@@ -149,8 +149,6 @@ public abstract class AbstractQuery implements Query {
     logger.debug("Tiempo de lectura entre ambos logs (aproximadamente): {} ms.", end - start);
   }
 
-  protected abstract void submitAllRecordsToCluster();
-
   /**
    * Pick the needed cluster collection from the given {@code hazelcastInstance}.
    * <p>
@@ -160,7 +158,6 @@ public abstract class AbstractQuery implements Query {
    * @param hazelcastInstance The hazelcast instance from where to require the needed cluster collection
    */
   protected abstract void pickAClearClusterCollection(final HazelcastInstance hazelcastInstance);
-  // TODO: pass also the SharedConfiguration.STRUCTURE_NAME variable :D
 
   /**
    * Fill the cluster collection already initialized by the {@code pickAClearClusterCollection} with the given
@@ -169,6 +166,11 @@ public abstract class AbstractQuery implements Query {
    * @param csvRecord The csv record to be added to the cluster collection
    */
   protected abstract void addRecordToClusterCollection(String[] csvRecord);
+
+  /**
+   * Submit all added records to the picked up cluster collection
+   */
+  protected abstract void submitAllRecordsToCluster();
 
   /**
    * Internally initialize all the needed stuff to perform the job submission.
