@@ -12,31 +12,31 @@ public final class ClientArgs {
   private static final ClientArgs SINGLETON_INSTANCE = new ClientArgs();
 
   public static final IDefaultProvider SYSTEM_PROPERTIES_PROVIDER =
-      optionName -> System.getProperties().getProperty(optionName.replaceAll("^-+", ""));
+      optionName -> System.getProperties().getProperty(optionName.replaceAll("^-D+", ""));
 
-  @Parameter(names = {"-addresses", "-a"}, required = true,
+  @Parameter(names = {"-Daddresses"}, required = true,
       splitter = SemicolonParameterSplitter.class)
   private List<String> addresses = new ArrayList<>();
 
-  @Parameter(names = {"-query", "-q"}, validateWith = QueryArgValidator.class, required = true)
+  @Parameter(names = {"-Dquery"}, validateWith = QueryArgValidator.class, required = true)
   private int query;
 
-  @Parameter(names = {"-inPath", "-i", "-in"}, required = true)
+  @Parameter(names = {"-DinPath"}, required = true)
   private String inPath;
 
-  @Parameter(names = {"-outPath", "-o", "-out"}, required = true)
+  @Parameter(names = {"-DoutPath"}, required = true)
   private String outPath;
 
-  @Parameter(names = {"-timeOutPath", "-times"}, required = true)
+  @Parameter(names = {"-DtimeOutPath"}, required = true)
   private String timeOutPath;
 
-  @Parameter(names = {"-n"})
+  @Parameter(names = {"-Dn"})
   private Integer n;
 
-  @Parameter(names = {"-prov", "-province"})
+  @Parameter(names = {"-Dprov"})
   private String province;
 
-  @Parameter(names = {"-d", "-debug"})
+  @Parameter(names = {"-Ddebug"})
   private boolean debug;
 
   private ClientArgs() {

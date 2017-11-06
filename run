@@ -23,4 +23,4 @@ if [ ! -f ${SCRIPT_DIR}/${RUN_FILE} ]; then
 fi
 
 cd ${SCRIPT_DIR}
-./${RUN_FILE} ${@:2}
+./${RUN_FILE} "${@:2}"

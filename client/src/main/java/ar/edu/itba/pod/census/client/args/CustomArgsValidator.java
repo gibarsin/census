@@ -20,16 +20,16 @@ public class CustomArgsValidator {
 
   private static void validateN(final int query, final Integer n) {
     if (QUERIES_THAT_REQUIRE_N.contains(query) && (n == null || n <= 0)) {
-      throw new ParameterException("N should be defined and greater than 0 for this query");
+      throw new ParameterException("'-Dn' should be defined and greater than 0 for this query");
     } else if (!QUERIES_THAT_REQUIRE_N.contains(query) && n != null) {
-      throw new ParameterException("N should be undefined for this query");
+      throw new ParameterException("'-Dn' should be undefined for this query");
     }
   }
 
   private static void validateProvince(final int query, final String province) {
     if (QUERIES_THAT_REQUIRE_PROVINCE.contains(query)) {
       if (province == null) {
-        throw new ParameterException("Province should be defined for this query");
+        throw new ParameterException("'-Dprov' should be defined for this query");
       } else {
         try {
           Province.fromString(province);
@@ -38,7 +38,7 @@ public class CustomArgsValidator {
         }
       }
     } else if (!QUERIES_THAT_REQUIRE_PROVINCE.contains(query) && province != null) {
-        throw new ParameterException("Province should be undefined for this query");
+        throw new ParameterException("'-Dprov' should be undefined for this query");
     }
   }
 }
