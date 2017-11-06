@@ -3,7 +3,6 @@ package ar.edu.itba.pod.census.client.args;
 import com.beust.jcommander.IDefaultProvider;
 import com.beust.jcommander.Parameter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -15,9 +14,6 @@ public final class ClientArgs {
 
   public static final IDefaultProvider SYSTEM_PROPERTIES_PROVIDER =
       optionName -> System.getProperties().getProperty(optionName.replaceAll("^-+", ""));
-
-  private static final List<Integer> QUERIES_N = Arrays.asList(2, 6, 7);
-  private static final List<Integer> QUERIES_PROVINCE = Collections.singletonList(2);
 
   @Parameter(names = {"-addresses", "-a"}, required = true,
       splitter = SemicolonParameterSplitter.class)
@@ -72,12 +68,7 @@ public final class ClientArgs {
   }
 
   public int getN() {
-    // TODO: move this validation to somewhere else; build() method perhaps?
-//    if (!QUERIES_N.contains(query)) {
-//      throw new ArgumentsErrorException("N is undefined for this query");
-//    }
-
-    return Objects.requireNonNull(n);
+    return n;
   }
 
   public String getProvince() {
@@ -86,7 +77,7 @@ public final class ClientArgs {
 //      throw new ArgumentsErrorException("Province is undefined for this query");
 //    }
 
-    return Objects.requireNonNull(province);
+    return province;
   }
 
   public boolean getDebug() {

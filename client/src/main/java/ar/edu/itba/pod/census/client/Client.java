@@ -1,7 +1,7 @@
 package ar.edu.itba.pod.census.client;
 
 import ar.edu.itba.pod.census.client.args.ClientArgs;
-import ar.edu.itba.pod.census.client.exception.ArgumentsErrorException;
+import ar.edu.itba.pod.census.client.args.CustomArgsValidator;
 import ar.edu.itba.pod.census.client.exception.InputFileErrorException;
 import ar.edu.itba.pod.census.client.exception.OutputFileErrorException;
 import ar.edu.itba.pod.census.client.exception.QueryFailedException;
@@ -13,8 +13,6 @@ import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.core.HazelcastInstance;
 
 public final class Client {
-  private static final ClientArgs CLIENT_ARGS = ClientArgs.getInstance();
-
   private enum Query {
     REGION_POPULATION, DEPARTMENT_POPULATION, REGION_OCCUPATION,
     HOME_COUNT_PER_REGION, CITIZENS_PER_HOME_BY_REGION,
@@ -22,8 +20,8 @@ public final class Client {
   }
 
   /**
-   * Queries index is offset by 1 to the left (i.e., query 1 is index 0, query 2 index 1 and so
-   * on...)
+   * Queries index is offset by 1 to the left (i.e., query 1 is index 0, query 2 index 1 and so on...).
+   * This is done in this way so as not to depend in the ordinal of each query
    */
   private static final Query[] QUERIES = new Query[Client.Query.values().length];
 
@@ -38,8 +36,8 @@ public final class Client {
   }
 
   private enum ExitStatus {
-    // 1 is used by hazelcast connections errors
-    OK(0), ARGS_ERROR(2), INPUT_FILE_ERROR(3), QUERY_FAILED(4), OUT_FILE_ERROR(5);
+    // 1 is used by hazelcast connections errors & argument validations
+    OK(0), INPUT_FILE_ERROR(2), QUERY_FAILED(3), OUT_FILE_ERROR(4);
 
     private final int status;
 
@@ -54,15 +52,13 @@ public final class Client {
 
   public static void main(final String[] args) {
     ExitStatus exitStatus = ExitStatus.OK;
-    parseClientArguments(args);
-    final HazelcastInstance hazelcastInstance = createHazelcastClient();
+    final ClientArgs clientArgs = parseClientArguments(args);
+    CustomArgsValidator.validate(clientArgs);
+    final HazelcastInstance hazelcastInstance = createHazelcastClient(clientArgs);
 
     try {
-      final ar.edu.itba.pod.census.client.query.Query query = buildQuery(hazelcastInstance, CLIENT_ARGS);
+      final ar.edu.itba.pod.census.client.query.Query query = buildQuery(hazelcastInstance, clientArgs);
       query.run();
-    } catch (final ArgumentsErrorException e) {
-      System.err.println(e.getMessage());
-      exitStatus = ExitStatus.ARGS_ERROR;
     } catch (final InputFileErrorException e) {
       System.err.println(e.getMessage());
       exitStatus = ExitStatus.INPUT_FILE_ERROR;
@@ -81,8 +77,7 @@ public final class Client {
   }
 
   private static ar.edu.itba.pod.census.client.query.Query buildQuery(final HazelcastInstance hazelcastInstance,
-                                                                      final ClientArgs clientArgs)
-      throws ArgumentsErrorException { // TODO: Add arguments validation on build
+                                                                      final ClientArgs clientArgs) {
     final AbstractQuery.Builder builder = getBuilderForQuery(QUERIES[clientArgs.getQuery() - 1]);
     return builder.setHazelcastInstance(hazelcastInstance).setClientArgs(clientArgs).build();
   }
@@ -108,18 +103,20 @@ public final class Client {
     }
   }
 
-  private static void parseClientArguments(final String[] args) {
+  private static ClientArgs parseClientArguments(final String[] args) {
+    final ClientArgs clientArgs = ClientArgs.getInstance();
     JCommander.newBuilder()
-        .addObject(CLIENT_ARGS)
+        .addObject(clientArgs)
         .defaultProvider(ClientArgs.SYSTEM_PROPERTIES_PROVIDER)
         .build()
         .parse(args);
+    return clientArgs;
   }
 
-  private static HazelcastInstance createHazelcastClient() {
+  private static HazelcastInstance createHazelcastClient(final ClientArgs clientArgs) {
     final ClientConfig clientConfig = new ClientConfig();
 
-    clientConfig.getNetworkConfig().setAddresses(CLIENT_ARGS.getAddresses());
+    clientConfig.getNetworkConfig().setAddresses(clientArgs.getAddresses());
     
     clientConfig.getGroupConfig()
         .setName(SharedConfiguration.GROUP_USERNAME)
